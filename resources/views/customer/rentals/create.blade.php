@@ -5,7 +5,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Request Rental') }}
                 </h2>
-                <p class="text-sm text-gray-600">Choose your rental dates for {{ $gadget->name }}.</p>
+                <p class="text-sm text-gray-600">Choose how you want to rent {{ $gadget->name }}.</p>
             </div>
 
             <a href="{{ route('customer.gadgets.show', $gadget) }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
@@ -14,8 +14,13 @@
         </div>
     </x-slot>
 
+    @php
+        $selectedRentalType = old('rental_type', 'day');
+        $selectedPickupType = old('pickup_type', 'walk_in');
+    @endphp
+
     <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="overflow-hidden rounded-3xl bg-white shadow-sm">
                 <div class="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
                     <div class="bg-gray-100">
@@ -23,10 +28,10 @@
                             <img
                                 src="{{ asset('storage/' . $gadget->image) }}"
                                 alt="{{ $gadget->name }}"
-                                class="h-full min-h-[280px] w-full object-cover"
+                                class="h-full min-h-[320px] w-full object-cover"
                             >
                         @else
-                            <div class="flex min-h-[280px] items-center justify-center text-sm text-gray-400">
+                            <div class="flex min-h-[320px] items-center justify-center text-sm text-gray-400">
                                 No image available
                             </div>
                         @endif
@@ -39,17 +44,57 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('customer.rentals.store') }}" class="space-y-6">
+                        <form method="POST" action="{{ route('customer.rentals.store') }}" class="space-y-6" id="rental-form">
                             @csrf
                             <input type="hidden" name="gadget_id" value="{{ $gadget->id }}">
 
-                            <div>
-                                <p class="text-sm font-medium text-gray-500">Gadget</p>
-                                <p class="mt-1 text-base font-semibold text-gray-900">{{ $gadget->name }}</p>
-                                <p class="mt-1 text-sm text-gray-500">{{ $gadget->category?->name ?? '-' }}</p>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="rounded-2xl bg-gray-50 p-4">
+                                    <p class="text-sm text-gray-500">Gadget</p>
+                                    <p class="mt-1 text-base font-semibold text-gray-900">{{ $gadget->name }}</p>
+                                    <p class="mt-1 text-sm text-gray-500">{{ $gadget->category?->name ?? '-' }}</p>
+                                </div>
+                                <div class="rounded-2xl bg-gray-50 p-4">
+                                    <p class="text-sm text-gray-500">Pricing</p>
+                                    <p class="mt-1 text-sm text-gray-900">Daily: {{ number_format($gadget->daily_rental_price, 2) }}</p>
+                                    <p class="text-sm text-gray-900">Hourly: {{ number_format($gadget->hourly_rental_price ?? $gadget->daily_rental_price, 2) }}</p>
+                                    <p class="text-sm text-gray-900">Deposit: {{ number_format($gadget->deposit_amount, 2) }}</p>
+                                </div>
                             </div>
 
-                            <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Rental Type</p>
+                                <div class="mt-2 flex flex-wrap gap-3">
+                                    <label class="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm {{ $selectedRentalType === 'hour' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-700' }}">
+                                        <input type="radio" name="rental_type" value="hour" @checked($selectedRentalType === 'hour')>
+                                        Hour
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm {{ $selectedRentalType === 'day' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-700' }}">
+                                        <input type="radio" name="rental_type" value="day" @checked($selectedRentalType === 'day')>
+                                        Day
+                                    </label>
+                                </div>
+                                @error('rental_type')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div id="hour-fields" class="rounded-2xl border border-gray-200 p-4">
+                                <label for="rental_hours" class="block text-sm font-medium text-gray-700">Number of Hours</label>
+                                <input
+                                    id="rental_hours"
+                                    name="rental_hours"
+                                    type="number"
+                                    min="1"
+                                    value="{{ old('rental_hours') }}"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                >
+                                @error('rental_hours')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div id="day-fields" class="grid gap-4 sm:grid-cols-2 rounded-2xl border border-gray-200 p-4">
                                 <div>
                                     <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
                                     <input
@@ -79,15 +124,90 @@
                                 </div>
                             </div>
 
-                            <div class="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
-                                <p class="font-semibold text-gray-900">Pricing</p>
-                                <p class="mt-2">Daily rental price: {{ number_format($gadget->daily_rental_price, 2) }}</p>
-                                <p>Deposit: {{ number_format($gadget->deposit_amount, 2) }}</p>
-                                <p class="mt-2 text-gray-500">Total amount will be calculated from your rental dates.</p>
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Pickup Type</p>
+                                <div class="mt-2 flex flex-wrap gap-3">
+                                    <label class="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm {{ $selectedPickupType === 'walk_in' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-700' }}">
+                                        <input type="radio" name="pickup_type" value="walk_in" @checked($selectedPickupType === 'walk_in')>
+                                        Walk-in
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm {{ $selectedPickupType === 'delivery' ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-300 bg-white text-gray-700' }}">
+                                        <input type="radio" name="pickup_type" value="delivery" @checked($selectedPickupType === 'delivery')>
+                                        Delivery
+                                    </label>
+                                </div>
+                                @error('pickup_type')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
 
+                            <div id="delivery-fields" class="grid gap-4 rounded-2xl border border-gray-200 p-4">
+                                <div>
+                                    <label for="delivery_address" class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                                    <textarea
+                                        id="delivery_address"
+                                        name="delivery_address"
+                                        rows="3"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >{{ old('delivery_address') }}</textarea>
+                                    @error('delivery_address')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                                        <input
+                                            id="phone_number"
+                                            name="phone_number"
+                                            type="text"
+                                            value="{{ old('phone_number') }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        >
+                                        @error('phone_number')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+
+                                    <div>
+                                        <label for="ic_number" class="block text-sm font-medium text-gray-700">IC Number</label>
+                                        <input
+                                            id="ic_number"
+                                            name="ic_number"
+                                            type="text"
+                                            value="{{ old('ic_number') }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        >
+                                        @error('ic_number')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
+                                <p class="font-semibold text-gray-900">Agreement</p>
+                                <p class="mt-2">
+                                    If the product is missing or damaged, you must pay the required amount. Your IC details may be used for police report purposes if illegal activities occur.
+                                </p>
+                                <button type="button" id="open-agreement" class="mt-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                                    View Agreement
+                                </button>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <input id="agreement_accepted" name="agreement_accepted" type="checkbox" value="1" class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" @checked(old('agreement_accepted'))>
+                                <label for="agreement_accepted" class="text-sm text-gray-700">
+                                    I have read and agree to the rental agreement.
+                                </label>
+                            </div>
+                            @error('agreement_accepted')
+                                <p class="-mt-4 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+
                             <div class="flex items-center gap-3">
-                                <button type="submit" class="inline-flex items-center rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
+                                <button type="submit" id="submit-button" class="inline-flex items-center rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-indigo-300">
                                     {{ __('Submit Request') }}
                                 </button>
 
@@ -101,4 +221,103 @@
             </div>
         </div>
     </div>
+
+    <div id="agreement-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 px-4">
+        <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-xl">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-xl font-semibold text-gray-900">Rental Agreement</h3>
+                    <p class="mt-1 text-sm text-gray-600">Please read this before continuing.</p>
+                </div>
+                <button type="button" id="close-agreement" class="rounded-md p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700">
+                    <span class="text-lg leading-none">&times;</span>
+                </button>
+            </div>
+
+            <div class="mt-5 rounded-2xl bg-gray-50 p-4 text-sm leading-6 text-gray-700">
+                If the product is missing or damaged, you must pay the required amount. Your IC details may be used for police report purposes if illegal activities occur.
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" id="acknowledge-agreement" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
+                    I Understand
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            const rentalTypeRadios = document.querySelectorAll('input[name="rental_type"]');
+            const pickupTypeRadios = document.querySelectorAll('input[name="pickup_type"]');
+            const hourFields = document.getElementById('hour-fields');
+            const dayFields = document.getElementById('day-fields');
+            const rentalHours = document.getElementById('rental_hours');
+            const startDate = document.getElementById('start_date');
+            const endDate = document.getElementById('end_date');
+            const deliveryFields = document.getElementById('delivery-fields');
+            const deliveryAddress = document.getElementById('delivery_address');
+            const phoneNumber = document.getElementById('phone_number');
+            const icNumber = document.getElementById('ic_number');
+            const agreementCheckbox = document.getElementById('agreement_accepted');
+            const submitButton = document.getElementById('submit-button');
+            const modal = document.getElementById('agreement-modal');
+            const openAgreement = document.getElementById('open-agreement');
+            const closeAgreement = document.getElementById('close-agreement');
+            const acknowledgeAgreement = document.getElementById('acknowledge-agreement');
+
+            const rentalTypeValue = () => document.querySelector('input[name="rental_type"]:checked')?.value || 'day';
+            const pickupTypeValue = () => document.querySelector('input[name="pickup_type"]:checked')?.value || 'walk_in';
+
+            const toggleFields = () => {
+                const isHour = rentalTypeValue() === 'hour';
+                const isDelivery = pickupTypeValue() === 'delivery';
+
+                hourFields.classList.toggle('hidden', ! isHour);
+                dayFields.classList.toggle('hidden', isHour);
+                deliveryFields.classList.toggle('hidden', ! isDelivery);
+
+                rentalHours.required = isHour;
+                startDate.required = ! isHour;
+                endDate.required = ! isHour;
+                deliveryAddress.required = isDelivery;
+                phoneNumber.required = isDelivery;
+                icNumber.required = isDelivery;
+            };
+
+            const toggleSubmit = () => {
+                submitButton.disabled = ! agreementCheckbox.checked;
+            };
+
+            rentalTypeRadios.forEach((radio) => radio.addEventListener('change', toggleFields));
+            pickupTypeRadios.forEach((radio) => radio.addEventListener('change', toggleFields));
+            agreementCheckbox.addEventListener('change', toggleSubmit);
+
+            openAgreement.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            });
+
+            const hideModal = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            closeAgreement.addEventListener('click', hideModal);
+            acknowledgeAgreement.addEventListener('click', () => {
+                agreementCheckbox.checked = true;
+                toggleSubmit();
+                hideModal();
+            });
+
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    hideModal();
+                }
+            });
+
+            toggleFields();
+            toggleSubmit();
+        })();
+    </script>
 </x-app-layout>

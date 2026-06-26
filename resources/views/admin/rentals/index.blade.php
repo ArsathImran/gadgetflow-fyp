@@ -5,7 +5,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Rental Requests') }}
                 </h2>
-                <p class="text-sm text-gray-600">Review and manage rental requests.</p>
+                <p class="text-sm text-gray-600">Review rental requests and payment proofs.</p>
             </div>
         </div>
     </x-slot>
@@ -32,9 +32,15 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Customer</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Contact</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gadget</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Pickup</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rental</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates / Hours</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Payment</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Shipping</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Proof</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
                                     </tr>
@@ -45,27 +51,66 @@
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ $rental->user?->name ?? '-' }}
                                             </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                <div>{{ $rental->phone_number ?? '-' }}</div>
+                                                <div class="text-gray-500">{{ $rental->ic_number ?? '-' }}</div>
+                                            </td>
                                             <td class="px-6 py-4">
                                                 <div class="font-medium text-gray-900">{{ $rental->gadget?->name ?? '-' }}</div>
                                                 <div class="text-sm text-gray-500">{{ $rental->gadget?->category?->name ?? '-' }}</div>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
-                                                {{ $rental->start_date }} to {{ $rental->end_date }}
+                                                {{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}
+                                                @if ($rental->pickup_type === 'delivery')
+                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-gray-500">{{ $rental->delivery_address ?? '-' }}</div>
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ ucfirst($rental->rental_type) }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                @if ($rental->rental_type === 'hour')
+                                                    {{ $rental->rental_hours }} hour(s)
+                                                @else
+                                                    {{ $rental->start_date }} to {{ $rental->end_date }}
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ number_format($rental->total_amount, 2) }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                                    @if ($rental->payment_status === 'verified') bg-green-100 text-green-800
+                                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
+                                                    @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
+                                                    @else bg-gray-100 text-gray-800 @endif">
+                                                    {{ ucwords(str_replace('_', ' ', $rental->payment_status)) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                @if ($rental->payment_proof)
+                                                    <a href="{{ asset('storage/' . $rental->payment_proof) }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">
+                                                        View Proof
+                                                    </a>
+                                                @else
+                                                    -
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
                                                     @if ($rental->status === 'approved') bg-green-100 text-green-800
                                                     @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
+                                                    @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
                                                     @else bg-yellow-100 text-yellow-800 @endif">
                                                     {{ ucfirst($rental->status) }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                @if ($rental->status === 'pending')
-                                                    <div class="inline-flex flex-wrap justify-end gap-2">
+                                                <div class="inline-flex flex-wrap justify-end gap-2">
+                                                    @if ($rental->status === 'pending')
                                                         <form method="POST" action="{{ route('admin.rentals.approve', $rental) }}">
                                                             @csrf
                                                             @method('PATCH')
@@ -81,10 +126,30 @@
                                                                 Reject
                                                             </button>
                                                         </form>
-                                                    </div>
-                                                @else
-                                                    <span class="text-gray-400">No actions</span>
-                                                @endif
+                                                    @endif
+
+                                                    @if ($rental->payment_status === 'pending')
+                                                        @if ($rental->payment_proof)
+                                                            <form method="POST" action="{{ route('admin.rentals.payment.verify', $rental) }}">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <button type="submit" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
+                                                                    Verify Payment
+                                                                </button>
+                                                            </form>
+
+                                                            <form method="POST" action="{{ route('admin.rentals.payment.reject', $rental) }}">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <button type="submit" class="rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
+                                                                    Reject Payment
+                                                                </button>
+                                                            </form>
+                                                        @else
+                                                            <span class="text-gray-400">Awaiting proof</span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

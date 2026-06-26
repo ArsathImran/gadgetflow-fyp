@@ -21,6 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/rentals/create/{gadget}', [RentalController::class, 'create'])->name('rentals.create');
     Route::post('/rentals', [RentalController::class, 'store'])->name('customer.rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('customer.rentals.index');
+    Route::get('/rentals/{rental}/payment', [RentalController::class, 'paymentCreate'])->name('customer.rentals.payment.create');
+    Route::post('/rentals/{rental}/payment', [RentalController::class, 'paymentStore'])->name('customer.rentals.payment.store');
 });
 
 Route::resource('categories', CategoryController::class)->middleware(['auth']);
@@ -30,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('admin.rentals.index');
     Route::patch('/admin/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('admin.rentals.approve');
     Route::patch('/admin/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('admin.rentals.reject');
+    Route::patch('/admin/rentals/{rental}/payment/verify', [RentalController::class, 'verifyPayment'])->name('admin.rentals.payment.verify');
+    Route::patch('/admin/rentals/{rental}/payment/reject', [RentalController::class, 'rejectPayment'])->name('admin.rentals.payment.reject');
 });
 
 Route::middleware('auth')->group(function () {

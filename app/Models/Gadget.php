@@ -13,6 +13,7 @@ class Gadget extends Model
         'name',
         'description',
         'daily_rental_price',
+        'hourly_rental_price',
         'deposit_amount',
         'quantity',
         'image',

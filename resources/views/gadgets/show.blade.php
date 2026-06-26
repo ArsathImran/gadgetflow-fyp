@@ -68,10 +68,15 @@
                         <p class="mt-1 text-base text-gray-900 whitespace-pre-line">{{ $gadget->description ?: '-' }}</p>
                     </div>
 
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    <div class="grid gap-4 sm:grid-cols-4">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Daily Rental Price</p>
                             <p class="mt-1 text-base text-gray-900">{{ number_format($gadget->daily_rental_price, 2) }}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">Hourly Rental Price</p>
+                            <p class="mt-1 text-base text-gray-900">{{ $gadget->hourly_rental_price !== null ? number_format($gadget->hourly_rental_price, 2) : '-' }}</p>
                         </div>
 
                         <div>

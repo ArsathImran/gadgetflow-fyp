@@ -5,7 +5,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('My Rentals') }}
                 </h2>
-                <p class="text-sm text-gray-600">Track your rental requests and their status.</p>
+                <p class="text-sm text-gray-600">Track your rental requests, payments, and shipping status.</p>
             </div>
 
             <a href="{{ route('customer.gadgets.index') }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
@@ -30,9 +30,14 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gadget</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Pickup</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates / Hours</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Payment</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Shipping</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
@@ -43,7 +48,29 @@
                                                 <div class="text-sm text-gray-500">{{ $rental->gadget?->category?->name ?? '-' }}</div>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
-                                                {{ $rental->start_date }} to {{ $rental->end_date }}
+                                                {{ ucfirst($rental->rental_type) }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                @if ($rental->rental_type === 'hour')
+                                                    {{ $rental->rental_hours }} hour(s)
+                                                @else
+                                                    {{ $rental->start_date }} to {{ $rental->end_date }}
+                                                @endif
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                                    @if ($rental->payment_status === 'verified') bg-green-100 text-green-800
+                                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
+                                                    @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
+                                                    @else bg-gray-100 text-gray-800 @endif">
+                                                    {{ ucwords(str_replace('_', ' ', $rental->payment_status)) }}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ number_format($rental->total_amount, 2) }}
@@ -56,6 +83,17 @@
                                                     @else bg-yellow-100 text-yellow-800 @endif">
                                                     {{ ucfirst($rental->status) }}
                                                 </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right text-sm font-medium">
+                                                @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                    <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
+                                                        Payment
+                                                    </a>
+                                                @elseif ($rental->payment_status === 'verified')
+                                                    <span class="text-gray-400">Completed</span>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

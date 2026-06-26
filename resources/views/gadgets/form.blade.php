@@ -85,6 +85,22 @@
                             </div>
 
                             <div>
+                                <x-input-label for="hourly_rental_price" :value="__('Hourly Rental Price')" />
+                                <x-text-input
+                                    id="hourly_rental_price"
+                                    name="hourly_rental_price"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="mt-1 block w-full"
+                                    :value="old('hourly_rental_price', $isEditing ? $gadget->hourly_rental_price : '')"
+                                />
+                                <x-input-error class="mt-2" :messages="$errors->get('hourly_rental_price')" />
+                            </div>
+                        </div>
+
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <div>
                                 <x-input-label for="deposit_amount" :value="__('Deposit Amount')" />
                                 <x-text-input
                                     id="deposit_amount"
