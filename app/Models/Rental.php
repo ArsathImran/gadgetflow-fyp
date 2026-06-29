@@ -18,6 +18,8 @@ class Rental extends Model
         'ic_number',
         'agreement_accepted',
         'payment_proof',
+        'payment_proofs',
+        'payment_note',
         'payment_status',
         'shipping_status',
         'start_date',
@@ -30,6 +32,7 @@ class Rental extends Model
     {
         return [
             'agreement_accepted' => 'boolean',
+            'payment_proofs' => 'array',
         ];
     }
 

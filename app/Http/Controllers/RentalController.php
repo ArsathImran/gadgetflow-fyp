@@ -70,6 +70,8 @@ class RentalController extends Controller
             'ic_number' => $validated['pickup_type'] === 'delivery' ? $validated['ic_number'] : null,
             'agreement_accepted' => true,
             'payment_proof' => null,
+            'payment_proofs' => null,
+            'payment_note' => null,
             'payment_status' => 'not_required',
             'shipping_status' => 'not_applicable',
             'start_date' => $rentalDates['start_date'],
@@ -107,17 +109,29 @@ class RentalController extends Controller
         abort_unless($rental->payment_status === 'pending', 403);
 
         $validated = $request->validate([
-            'payment_proof' => ['required', 'file', 'max:4096'],
+            'payment_proofs' => ['required', 'array', 'min:1'],
+            'payment_proofs.*' => ['required', 'file', 'max:5120'],
+            'payment_note' => ['nullable', 'string'],
         ]);
 
-        if ($rental->payment_proof) {
+        $existingProofs = collect($rental->payment_proofs ?? []);
+
+        if ($existingProofs->isNotEmpty()) {
+            Storage::disk('public')->delete($existingProofs->all());
+        } elseif ($rental->payment_proof) {
             Storage::disk('public')->delete($rental->payment_proof);
         }
 
-        $path = $request->file('payment_proof')->store('payments', 'public');
+        $paths = collect($request->file('payment_proofs'))
+            ->map(fn ($file) => $file->store('payments', 'public'))
+            ->values()
+            ->all();
 
         $rental->update([
-            'payment_proof' => $path,
+            'payment_proof' => $paths[0] ?? null,
+            'payment_proofs' => $paths,
+            'payment_note' => $validated['payment_note'] ?? null,
+            'payment_status' => 'pending',
         ]);
 
         return redirect()
@@ -183,8 +197,13 @@ class RentalController extends Controller
     public function verifyPayment(Rental $rental)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+        $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
 
-        if ($rental->payment_status !== 'pending' || ! $rental->payment_proof) {
+        if (
+            $rental->pickup_type !== 'delivery'
+            || $rental->payment_status !== 'pending'
+            || count($paymentProofs) === 0
+        ) {
             return back()->with('error', 'Only pending payment proofs can be verified.');
         }
 
@@ -199,8 +218,13 @@ class RentalController extends Controller
     public function rejectPayment(Rental $rental)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+        $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
 
-        if ($rental->payment_status !== 'pending' || ! $rental->payment_proof) {
+        if (
+            $rental->pickup_type !== 'delivery'
+            || $rental->payment_status !== 'pending'
+            || count($paymentProofs) === 0
+        ) {
             return back()->with('error', 'Only pending payment proofs can be rejected.');
         }
 

@@ -42,6 +42,11 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
                                     @foreach ($rentals as $rental)
+                                        @php
+                                            $paymentLabel = $rental->payment_status === 'not_required' && $rental->pickup_type === 'walk_in' && $rental->status === 'approved'
+                                                ? 'Pay at Store'
+                                                : ucwords(str_replace('_', ' ', $rental->payment_status));
+                                        @endphp
                                         <tr>
                                             <td class="px-6 py-4">
                                                 <div class="font-medium text-gray-900">{{ $rental->gadget?->name ?? '-' }}</div>
@@ -66,7 +71,7 @@
                                                     @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
                                                     @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
                                                     @else bg-gray-100 text-gray-800 @endif">
-                                                    {{ ucwords(str_replace('_', ' ', $rental->payment_status)) }}
+                                                    {{ $paymentLabel }}
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
@@ -87,10 +92,8 @@
                                             <td class="px-6 py-4 text-right text-sm font-medium">
                                                 @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
                                                     <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
-                                                        Payment
+                                                        Pay Now
                                                     </a>
-                                                @elseif ($rental->payment_status === 'verified')
-                                                    <span class="text-gray-400">Completed</span>
                                                 @else
                                                     <span class="text-gray-400">-</span>
                                                 @endif

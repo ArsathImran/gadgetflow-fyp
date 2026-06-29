@@ -47,6 +47,12 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
                                     @foreach ($rentals as $rental)
+                                        @php
+                                            $paymentLabel = $rental->payment_status === 'not_required' && $rental->pickup_type === 'walk_in' && $rental->status === 'approved'
+                                                ? 'Pay at Store'
+                                                : ucwords(str_replace('_', ' ', $rental->payment_status));
+                                            $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
+                                        @endphp
                                         <tr>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ $rental->user?->name ?? '-' }}
@@ -84,17 +90,34 @@
                                                     @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
                                                     @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
                                                     @else bg-gray-100 text-gray-800 @endif">
-                                                    {{ ucwords(str_replace('_', ' ', $rental->payment_status)) }}
+                                                    {{ $paymentLabel }}
                                                 </span>
+                                                <div class="mt-2 max-w-xs whitespace-pre-line text-xs text-gray-500">
+                                                    {{ $rental->payment_note ?: '-' }}
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
-                                                @if ($rental->payment_proof)
-                                                    <a href="{{ asset('storage/' . $rental->payment_proof) }}" target="_blank" class="text-indigo-600 hover:text-indigo-500">
-                                                        View Proof
-                                                    </a>
+                                                @if (count($paymentProofs))
+                                                    <div class="flex max-w-xs flex-wrap gap-3">
+                                                        @foreach ($paymentProofs as $proof)
+                                                            @php
+                                                                $extension = strtolower(pathinfo($proof, PATHINFO_EXTENSION));
+                                                                $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], true);
+                                                            @endphp
+                                                            <a href="{{ asset('storage/' . $proof) }}" target="_blank" class="block">
+                                                                @if ($isImage)
+                                                                    <img src="{{ asset('storage/' . $proof) }}" alt="Payment proof {{ $loop->iteration }}" class="h-16 w-16 rounded-lg border border-gray-200 object-cover">
+                                                                @else
+                                                                    <span class="inline-flex rounded-md border border-indigo-200 px-3 py-2 text-indigo-600 hover:bg-indigo-50">
+                                                                        View file {{ $loop->iteration }}
+                                                                    </span>
+                                                                @endif
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
                                                 @else
                                                     -
                                                 @endif
@@ -128,8 +151,8 @@
                                                         </form>
                                                     @endif
 
-                                                    @if ($rental->payment_status === 'pending')
-                                                        @if ($rental->payment_proof)
+                                                    @if ($rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                        @if (count($paymentProofs))
                                                             <form method="POST" action="{{ route('admin.rentals.payment.verify', $rental) }}">
                                                                 @csrf
                                                                 @method('PATCH')
