@@ -1,47 +1,69 @@
-<x-guest-layout>
-    <!-- Session Status -->
+<x-guest-layout
+    title="Welcome back"
+    subtitle="Sign in to manage bookings, monitor device availability, and keep every premium rental flowing smoothly."
+    eyebrow="Member Login"
+>
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="you@example.com" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
+            <div class="relative" x-data="{ shown: false }">
+                <x-text-input id="password" x-ref="password" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password" class="pr-12" />
+                <button
+                    type="button"
+                    class="absolute inset-y-0 right-0 flex items-center px-4 text-slate-400 transition hover:text-slate-200"
+                    x-on:click="shown = !shown; $refs.password.type = shown ? 'text' : 'password'"
+                    x-on:keydown.enter.prevent="shown = !shown; $refs.password.type = shown ? 'text' : 'password'"
+                    x-bind:aria-label="shown ? 'Hide password' : 'Show password'"
+                >
+                    <svg x-show="!shown" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/>
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <svg x-show="shown" x-cloak class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.585 10.587A2 2 0 0 0 13.414 13.414"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.88 5.09A10.94 10.94 0 0 1 12 5c4.478 0 8.268 2.943 9.542 7a11.05 11.05 0 0 1-4.132 5.411"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.61 6.609A11.002 11.002 0 0 0 2.458 12c1.274 4.057 5.065 7 9.542 7a10.96 10.96 0 0 0 5.39-1.39"/>
+                    </svg>
+                </button>
+            </div>
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        <div class="flex items-center justify-between gap-4">
+            <label for="remember_me" class="inline-flex items-center gap-3 text-sm text-slate-300">
+                <input id="remember_me" type="checkbox" class="rounded-full border-white/10 bg-white/5 text-blue-500 focus:ring-blue-500/30 focus:ring-offset-0" name="remember">
+                <span>{{ __('Remember me') }}</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                <a class="text-sm font-medium text-blue-200 transition hover:text-white" href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
+        </div>
 
-            <x-primary-button class="ms-3">
+        <div class="space-y-4 pt-2">
+            <x-primary-button class="w-full">
                 {{ __('Log in') }}
             </x-primary-button>
+
+            @if (Route::has('register'))
+                <p class="text-center text-sm text-slate-400">
+                    {{ __("Don't have an account?") }}
+                    <a class="font-medium text-blue-200 transition hover:text-white" href="{{ route('register') }}">{{ __('Create one') }}</a>
+                </p>
+            @endif
         </div>
     </form>
 </x-guest-layout>
