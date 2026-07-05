@@ -36,6 +36,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Payment</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Shipping</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Deposit</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Returned At</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
@@ -81,6 +82,37 @@
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ number_format($rental->total_amount, 2) }}
                                             </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                <div>{{ number_format((float) ($rental->deposit_amount ?? 0), 2) }}</div>
+                                                <div class="mt-2">
+                                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                                        @if ($rental->deposit_status === 'refunded') bg-green-100 text-green-800
+                                                        @elseif ($rental->deposit_status === 'partially_refunded') bg-yellow-100 text-yellow-800
+                                                        @elseif ($rental->deposit_status === 'deducted') bg-red-100 text-red-800
+                                                        @else bg-gray-100 text-gray-800 @endif">
+                                                        {{ ucwords(str_replace('_', ' ', $rental->deposit_status ?? 'held')) }}
+                                                    </span>
+                                                </div>
+                                                @if (!is_null($rental->deposit_refund_amount))
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        Refunded: {{ number_format((float) $rental->deposit_refund_amount, 2) }}
+                                                    </div>
+                                                @endif
+                                                @if ($rental->deposit_deduction_reason)
+                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-xs text-gray-500">
+                                                        Reason: {{ $rental->deposit_deduction_reason }}
+                                                    </div>
+                                                @endif
+                                                @if ($rental->late_fee_waived)
+                                                    <div class="mt-2 text-xs font-semibold text-green-700">
+                                                        Late Fee: Waived
+                                                    </div>
+                                                @elseif ((float) ($rental->late_fee_amount ?? 0) > 0)
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        Late Fee: {{ number_format((float) $rental->late_fee_amount, 2) }}
+                                                    </div>
+                                                @endif
+                                            </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
                                                     @if ($rental->status === 'approved') bg-green-100 text-green-800
@@ -89,6 +121,13 @@
                                                     @else bg-yellow-100 text-yellow-800 @endif">
                                                     {{ $rental->status === 'completed' ? 'Completed' : ucfirst($rental->status) }}
                                                 </span>
+                                                @if ($rental->isOverdue())
+                                                    <div class="mt-2">
+                                                        <span class="inline-flex rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800">
+                                                            {{ $rental->daysOverdue() }} day{{ $rental->daysOverdue() === 1 ? '' : 's' }} overdue
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 @if ($rental->returned_at)

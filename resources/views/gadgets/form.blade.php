@@ -114,6 +114,20 @@
                                 />
                                 <x-input-error class="mt-2" :messages="$errors->get('deposit_amount')" />
                             </div>
+
+                            <div>
+                                <x-input-label for="late_fee_per_day" :value="__('Late Fee Per Day')" />
+                                <x-text-input
+                                    id="late_fee_per_day"
+                                    name="late_fee_per_day"
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="mt-1 block w-full"
+                                    :value="old('late_fee_per_day', $isEditing ? $gadget->late_fee_per_day : '')"
+                                />
+                                <x-input-error class="mt-2" :messages="$errors->get('late_fee_per_day')" />
+                            </div>
                         </div>
 
                         <div class="grid gap-6 sm:grid-cols-2">

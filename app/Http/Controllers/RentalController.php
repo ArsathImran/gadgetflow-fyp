@@ -77,6 +77,7 @@ class RentalController extends Controller
             'start_date' => $rentalDates['start_date'],
             'end_date' => $rentalDates['end_date'],
             'total_amount' => $totalAmount,
+            'deposit_amount' => $gadget->deposit_amount,
             'status' => 'pending',
         ]);
 
@@ -206,9 +207,46 @@ class RentalController extends Controller
         $validated = $request->validate([
             'condition_on_return' => ['required', 'in:good,damaged,missing_parts'],
             'return_notes' => ['nullable', 'string'],
+            'deposit_decision' => ['required', 'in:full_refund,partial_refund,deduct_all'],
+            'deposit_refund_amount' => [
+                'nullable',
+                'required_if:deposit_decision,partial_refund',
+                'numeric',
+                'min:0',
+                'max:' . (float) ($rental->deposit_amount ?? 0),
+            ],
+            'deposit_deduction_reason' => [
+                'nullable',
+                'string',
+                'required_if:deposit_decision,partial_refund,deduct_all',
+            ],
+            'waive_late_fee' => ['nullable', 'boolean'],
         ]);
 
-        DB::transaction(function () use ($rental, $validated) {
+        $depositAmount = (float) ($rental->deposit_amount ?? 0);
+        $depositStatus = 'refunded';
+        $depositRefundAmount = $depositAmount;
+        $daysOverdue = $rental->daysOverdue();
+        $lateFeeAmount = $daysOverdue > 0
+            ? $daysOverdue * (float) ($rental->gadget?->late_fee_per_day ?? 0)
+            : 0;
+        $lateFeeWaived = $request->boolean('waive_late_fee');
+
+        if ($lateFeeWaived) {
+            $lateFeeAmount = 0;
+        }
+
+        if ($validated['deposit_decision'] === 'partial_refund') {
+            $depositStatus = 'partially_refunded';
+            $depositRefundAmount = (float) $validated['deposit_refund_amount'];
+        }
+
+        if ($validated['deposit_decision'] === 'deduct_all') {
+            $depositStatus = 'deducted';
+            $depositRefundAmount = 0;
+        }
+
+        DB::transaction(function () use ($rental, $validated, $depositStatus, $depositRefundAmount, $lateFeeAmount, $lateFeeWaived) {
             $gadget = Gadget::query()
                 ->whereKey($rental->gadget_id)
                 ->lockForUpdate()
@@ -221,6 +259,11 @@ class RentalController extends Controller
                 'returned_at' => now(),
                 'condition_on_return' => $validated['condition_on_return'],
                 'return_notes' => $validated['return_notes'] ?? null,
+                'deposit_status' => $depositStatus,
+                'deposit_refund_amount' => $depositRefundAmount,
+                'deposit_deduction_reason' => $validated['deposit_deduction_reason'] ?? null,
+                'late_fee_amount' => $lateFeeAmount,
+                'late_fee_waived' => $lateFeeWaived,
             ]);
         });
 
