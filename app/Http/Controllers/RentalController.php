@@ -194,6 +194,39 @@ class RentalController extends Controller
         return back()->with('success', 'Rental request rejected.');
     }
 
+    public function markReturned(Request $request, Rental $rental)
+    {
+        abort_unless(auth()->check(), 403);
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        if ($rental->status !== 'approved') {
+            abort(422, 'Only approved rentals can be marked as returned.');
+        }
+
+        $validated = $request->validate([
+            'condition_on_return' => ['required', 'in:good,damaged,missing_parts'],
+            'return_notes' => ['nullable', 'string'],
+        ]);
+
+        DB::transaction(function () use ($rental, $validated) {
+            $gadget = Gadget::query()
+                ->whereKey($rental->gadget_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $gadget->increment('quantity');
+
+            $rental->update([
+                'status' => 'completed',
+                'returned_at' => now(),
+                'condition_on_return' => $validated['condition_on_return'],
+                'return_notes' => $validated['return_notes'] ?? null,
+            ]);
+        });
+
+        return back()->with('success', 'Rental marked as returned successfully.');
+    }
+
     public function verifyPayment(Rental $rental)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);

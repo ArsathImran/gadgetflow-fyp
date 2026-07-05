@@ -26,6 +26,9 @@ class Rental extends Model
         'end_date',
         'total_amount',
         'status',
+        'returned_at',
+        'condition_on_return',
+        'return_notes',
     ];
 
     protected function casts(): array
@@ -33,6 +36,7 @@ class Rental extends Model
         return [
             'agreement_accepted' => 'boolean',
             'payment_proofs' => 'array',
+            'returned_at' => 'datetime',
         ];
     }
 

@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('admin.rentals.index');
     Route::patch('/admin/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('admin.rentals.approve');
     Route::patch('/admin/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('admin.rentals.reject');
+    Route::patch('/admin/rentals/{rental}/return', [RentalController::class, 'markReturned'])->name('admin.rentals.return');
     Route::patch('/admin/rentals/{rental}/payment/verify', [RentalController::class, 'verifyPayment'])->name('admin.rentals.payment.verify');
     Route::patch('/admin/rentals/{rental}/payment/reject', [RentalController::class, 'rejectPayment'])->name('admin.rentals.payment.reject');
 });

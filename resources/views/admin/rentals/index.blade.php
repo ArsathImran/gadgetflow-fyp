@@ -128,8 +128,19 @@
                                                     @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
                                                     @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
                                                     @else bg-yellow-100 text-yellow-800 @endif">
-                                                    {{ ucfirst($rental->status) }}
+                                                    {{ $rental->status === 'completed' ? 'Completed' : ucfirst($rental->status) }}
                                                 </span>
+                                                @if ($rental->returned_at)
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        Returned: {{ $rental->returned_at->format('Y-m-d H:i') }}
+                                                    </div>
+                                                    <div class="mt-1 text-xs text-gray-500">
+                                                        Condition: {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '-')) }}
+                                                    </div>
+                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-xs text-gray-500">
+                                                        Notes: {{ $rental->return_notes ?: '-' }}
+                                                    </div>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
                                                 <div class="inline-flex flex-wrap justify-end gap-2">
@@ -171,6 +182,28 @@
                                                         @else
                                                             <span class="text-gray-400">Awaiting proof</span>
                                                         @endif
+                                                    @endif
+
+                                                    @if ($rental->status === 'approved')
+                                                        <form method="POST" action="{{ route('admin.rentals.return', $rental) }}" class="w-full max-w-xs rounded-md border border-blue-200 bg-blue-50 p-3 text-left">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                                                Condition on Return
+                                                            </label>
+                                                            <select name="condition_on_return" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                                                <option value="good">Good</option>
+                                                                <option value="damaged">Damaged</option>
+                                                                <option value="missing_parts">Missing Parts</option>
+                                                            </select>
+                                                            <label class="mt-3 mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                                                Return Notes
+                                                            </label>
+                                                            <textarea name="return_notes" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Optional notes about the returned item.">{{ old('return_notes') }}</textarea>
+                                                            <button type="submit" class="mt-3 rounded-md border border-blue-300 px-3 py-2 text-blue-700 transition hover:bg-blue-100">
+                                                                Mark as Returned
+                                                            </button>
+                                                        </form>
                                                     @endif
                                                 </div>
                                             </td>

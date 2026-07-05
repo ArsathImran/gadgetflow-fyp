@@ -37,6 +37,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Shipping</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Returned At</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Action</th>
                                     </tr>
                                 </thead>
@@ -86,8 +87,18 @@
                                                     @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
                                                     @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
                                                     @else bg-yellow-100 text-yellow-800 @endif">
-                                                    {{ ucfirst($rental->status) }}
+                                                    {{ $rental->status === 'completed' ? 'Completed' : ucfirst($rental->status) }}
                                                 </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">
+                                                @if ($rental->returned_at)
+                                                    <div>{{ $rental->returned_at->format('Y-m-d H:i') }}</div>
+                                                    <div class="mt-1 text-xs text-gray-500">
+                                                        {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '')) }}
+                                                    </div>
+                                                @else
+                                                    -
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
                                                 @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
