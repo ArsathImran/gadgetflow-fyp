@@ -3,6 +3,7 @@
 use App\Http\Controllers\GadgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerGadgetController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -11,9 +12,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/browse-gadgets', [CustomerGadgetController::class, 'index'])->name('customer.gadgets.index');
