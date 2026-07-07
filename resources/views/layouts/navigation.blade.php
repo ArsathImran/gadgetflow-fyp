@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                             {{ __('Rental Requests') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                            {{ __('Customers') }}
+                        </x-nav-link>
                     @else
                         <x-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">
                             {{ __('Browse Gadgets') }}
@@ -90,6 +93,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                     {{ __('Rental Requests') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
+                    {{ __('Customers') }}
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">

@@ -43,6 +43,7 @@ class RentalController extends Controller
     {
         abort_unless(auth()->check(), 403);
         abort_unless(auth()->user()->isCustomer(), 403);
+        abort_if(auth()->user()->is_blocked, 403, 'Your account has been blocked from making rental requests. Please contact support.');
 
         $validated = $request->validate([
             'gadget_id' => ['required', 'integer', 'exists:gadgets,id'],

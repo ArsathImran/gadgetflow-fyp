@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\GadgetController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerGadgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +40,11 @@ Route::middleware('auth')->group(function () {
     Route::patch('/admin/rentals/{rental}/return', [RentalController::class, 'markReturned'])->name('admin.rentals.return');
     Route::patch('/admin/rentals/{rental}/payment/verify', [RentalController::class, 'verifyPayment'])->name('admin.rentals.payment.verify');
     Route::patch('/admin/rentals/{rental}/payment/reject', [RentalController::class, 'rejectPayment'])->name('admin.rentals.payment.reject');
+    Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
+    Route::get('/admin/customers/{user}', [CustomerController::class, 'show'])->name('admin.customers.show');
+    Route::patch('/admin/customers/{user}/toggle-block', [CustomerController::class, 'toggleBlock'])->name('admin.customers.toggleBlock');
+    Route::get('/admin/reports/rentals-csv', [ReportController::class, 'rentalsCsv'])->name('admin.reports.rentals-csv');
+    Route::get('/admin/reports/revenue-pdf', [ReportController::class, 'revenuePdf'])->name('admin.reports.revenue-pdf');
 });
 
 Route::middleware('auth')->group(function () {

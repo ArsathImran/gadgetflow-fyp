@@ -16,6 +16,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if (session('error'))
+                <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @if ($user->isAdmin())
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
@@ -108,6 +114,84 @@
                                     </p>
                                 @endforelse
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                    <div class="flex flex-col gap-2">
+                        <h3 class="text-lg font-semibold text-slate-950">Reports</h3>
+                        <p class="text-sm text-slate-500">Export filtered rental records or download a monthly revenue summary.</p>
+                    </div>
+
+                    <div class="mt-6 grid gap-6 xl:grid-cols-2">
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <h4 class="text-base font-semibold text-slate-900">Rentals CSV</h4>
+                            <p class="mt-1 text-sm text-slate-500">Filter rentals by created date and status before exporting.</p>
+
+                            <form method="GET" action="{{ route('admin.reports.rentals-csv') }}" class="mt-5 grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <label for="report-from" class="text-sm font-medium text-slate-700">From</label>
+                                    <input
+                                        id="report-from"
+                                        type="date"
+                                        name="from"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                </div>
+                                <div>
+                                    <label for="report-to" class="text-sm font-medium text-slate-700">To</label>
+                                    <input
+                                        id="report-to"
+                                        type="date"
+                                        name="to"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="report-status" class="text-sm font-medium text-slate-700">Status</label>
+                                    <select
+                                        id="report-status"
+                                        name="status"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approved</option>
+                                        <option value="rejected">Rejected</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled_by_customer">Cancelled by Customer</option>
+                                    </select>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <button type="submit" class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
+                                        Download CSV
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <h4 class="text-base font-semibold text-slate-900">Revenue PDF</h4>
+                            <p class="mt-1 text-sm text-slate-500">Generate a downloadable monthly summary for finance reporting.</p>
+
+                            <form method="GET" action="{{ route('admin.reports.revenue-pdf') }}" class="mt-5 flex flex-col gap-3">
+                                <div>
+                                    <label for="report-month" class="text-sm font-medium text-slate-700">Month</label>
+                                    <input
+                                        id="report-month"
+                                        type="month"
+                                        name="month"
+                                        value="{{ now()->format('Y-m') }}"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                </div>
+                                <div>
+                                    <button type="submit" class="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">
+                                        Download Revenue PDF
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
