@@ -17,7 +17,7 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isCustomer(), 403);
 
         $rentals = Rental::query()
-            ->with('gadget')
+            ->with(['gadget', 'collectedByAdmin'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
@@ -145,7 +145,7 @@ class RentalController extends Controller
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
 
         $rentals = Rental::query()
-            ->with(['user', 'gadget'])
+            ->with(['user', 'gadget', 'collectedByAdmin'])
             ->latest()
             ->paginate(10);
 
@@ -174,7 +174,7 @@ class RentalController extends Controller
 
             $rental->update([
                 'status' => 'approved',
-                'payment_status' => $rental->pickup_type === 'delivery' ? 'pending' : 'not_required',
+                'payment_status' => $rental->pickup_type === 'delivery' ? 'pending' : 'pending_collection',
                 'shipping_status' => $rental->pickup_type === 'delivery' ? 'not_applicable' : 'not_applicable',
             ]);
         });
@@ -193,6 +193,24 @@ class RentalController extends Controller
         $rental->update(['status' => 'rejected']);
 
         return back()->with('success', 'Rental request rejected.');
+    }
+
+    public function collectPayment(Request $request, Rental $rental)
+    {
+        abort_unless(auth()->check(), 403);
+        abort_unless(auth()->user()->isAdmin(), 403);
+
+        if ($rental->pickup_type !== 'walk_in' || $rental->payment_status !== 'pending_collection') {
+            abort(422, 'Only walk-in rentals awaiting collection can be marked as paid.');
+        }
+
+        $rental->update([
+            'payment_status' => 'collected',
+            'payment_collected_at' => now(),
+            'payment_collected_by' => auth()->id(),
+        ]);
+
+        return back()->with('success', 'Walk-in payment marked as collected successfully.');
     }
 
     public function markReturned(Request $request, Rental $rental)

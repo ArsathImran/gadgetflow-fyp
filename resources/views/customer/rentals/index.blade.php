@@ -45,9 +45,11 @@
                                 <tbody class="divide-y divide-gray-200 bg-white">
                                     @foreach ($rentals as $rental)
                                         @php
-                                            $paymentLabel = $rental->payment_status === 'not_required' && $rental->pickup_type === 'walk_in' && $rental->status === 'approved'
-                                                ? 'Pay at Store'
-                                                : ucwords(str_replace('_', ' ', $rental->payment_status));
+                                            $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
+                                                ? 'Pending Collection'
+                                                : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
+                                                    ? 'Payment Collected'
+                                                    : ucwords(str_replace('_', ' ', $rental->payment_status)));
                                         @endphp
                                         <tr>
                                             <td class="px-6 py-4">
@@ -69,12 +71,52 @@
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
-                                                    @if ($rental->payment_status === 'verified') bg-green-100 text-green-800
+                                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
                                                     @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                                    @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
+                                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
                                                     @else bg-gray-100 text-gray-800 @endif">
                                                     {{ $paymentLabel }}
                                                 </span>
+                                                @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'collected' && $rental->payment_collected_at)
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        Collected on {{ $rental->payment_collected_at->format('Y-m-d H:i') }}
+                                                    </div>
+                                                    <div class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                                                        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Payment Receipt</p>
+                                                        <div class="mt-3 space-y-2 text-xs text-emerald-900">
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Gadget</span>
+                                                                <span class="text-right font-semibold">{{ $rental->gadget?->name ?? '-' }}</span>
+                                                            </div>
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Rental Period</span>
+                                                                <span class="text-right font-semibold">
+                                                                    @if ($rental->rental_type === 'hour')
+                                                                        {{ $rental->rental_hours }} hour(s)
+                                                                    @else
+                                                                        {{ $rental->start_date }} to {{ $rental->end_date }}
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Total Amount</span>
+                                                                <span class="font-semibold">{{ number_format($rental->total_amount, 2) }}</span>
+                                                            </div>
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Deposit Amount</span>
+                                                                <span class="font-semibold">{{ number_format((float) ($rental->deposit_amount ?? 0), 2) }}</span>
+                                                            </div>
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Payment Method</span>
+                                                                <span class="font-semibold">Walk-in / Cash</span>
+                                                            </div>
+                                                            <div class="flex items-center justify-between gap-4">
+                                                                <span class="text-emerald-700">Collected Date</span>
+                                                                <span class="font-semibold">{{ $rental->payment_collected_at->format('Y-m-d H:i') }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}

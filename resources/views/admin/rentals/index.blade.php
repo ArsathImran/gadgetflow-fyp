@@ -48,9 +48,11 @@
                                 <tbody class="divide-y divide-gray-200 bg-white">
                                     @foreach ($rentals as $rental)
                                         @php
-                                            $paymentLabel = $rental->payment_status === 'not_required' && $rental->pickup_type === 'walk_in' && $rental->status === 'approved'
-                                                ? 'Pay at Store'
-                                                : ucwords(str_replace('_', ' ', $rental->payment_status));
+                                            $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
+                                                ? 'Pending Collection'
+                                                : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
+                                                    ? 'Collected'
+                                                    : ucwords(str_replace('_', ' ', $rental->payment_status)));
                                             $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                                             $daysOverdue = $rental->daysOverdue();
                                             $calculatedLateFee = $daysOverdue * (float) ($rental->gadget?->late_fee_per_day ?? 0);
@@ -88,12 +90,20 @@
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
-                                                    @if ($rental->payment_status === 'verified') bg-green-100 text-green-800
+                                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
                                                     @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                                    @elseif ($rental->payment_status === 'pending') bg-yellow-100 text-yellow-800
+                                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
                                                     @else bg-gray-100 text-gray-800 @endif">
                                                     {{ $paymentLabel }}
                                                 </span>
+                                                @if ($rental->payment_status === 'collected' && $rental->payment_collected_at)
+                                                    <div class="mt-2 text-xs text-gray-500">
+                                                        Collected: {{ $rental->payment_collected_at->format('Y-m-d H:i') }}
+                                                    </div>
+                                                    <div class="mt-1 text-xs text-gray-500">
+                                                        By: {{ $rental->collectedByAdmin?->name ?? '-' }}
+                                                    </div>
+                                                @endif
                                                 <div class="mt-2 max-w-xs whitespace-pre-line text-xs text-gray-500">
                                                     {{ $rental->payment_note ?: '-' }}
                                                 </div>
@@ -191,6 +201,16 @@
                                                         @else
                                                             <span class="text-gray-400">Awaiting proof</span>
                                                         @endif
+                                                    @endif
+
+                                                    @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'pending_collection')
+                                                        <form method="POST" action="{{ route('admin.rentals.payment.collect', $rental) }}">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
+                                                                Mark Payment Collected
+                                                            </button>
+                                                        </form>
                                                     @endif
 
                                                     @if ($rental->status === 'approved')

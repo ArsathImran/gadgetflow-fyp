@@ -36,6 +36,8 @@ class Rental extends Model
         'deposit_deduction_reason',
         'late_fee_amount',
         'late_fee_waived',
+        'payment_collected_at',
+        'payment_collected_by',
     ];
 
     protected function casts(): array
@@ -48,6 +50,7 @@ class Rental extends Model
             'deposit_refund_amount' => 'decimal:2',
             'late_fee_amount' => 'decimal:2',
             'late_fee_waived' => 'boolean',
+            'payment_collected_at' => 'datetime',
         ];
     }
 
@@ -84,5 +87,10 @@ class Rental extends Model
     public function gadget(): BelongsTo
     {
         return $this->belongsTo(Gadget::class);
+    }
+
+    public function collectedByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'payment_collected_by');
     }
 }
