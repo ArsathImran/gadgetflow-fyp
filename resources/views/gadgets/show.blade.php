@@ -1,4 +1,9 @@
 <x-app-layout>
+    @php
+        $averageRating = $gadget->averageRating();
+        $reviewsCount = $gadget->reviewsCount();
+    @endphp
+
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <div>
@@ -99,6 +104,61 @@
                         <div>
                             <p class="text-sm font-medium text-gray-500">Updated At</p>
                             <p class="mt-1 text-base text-gray-900">{{ $gadget->updated_at }}</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Customer Reviews</p>
+                                @if ($averageRating)
+                                    <div class="mt-2 flex items-center gap-3">
+                                        <div class="text-amber-500">
+                                            @for ($star = 1; $star <= 5; $star++)
+                                                <span class="{{ $star <= round($averageRating) ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                            @endfor
+                                        </div>
+                                        <span class="text-sm font-semibold text-gray-900">{{ number_format($averageRating, 1) }}/5</span>
+                                        <span class="text-sm text-gray-500">{{ $reviewsCount }} review{{ $reviewsCount === 1 ? '' : 's' }}</span>
+                                    </div>
+                                @else
+                                    <p class="mt-1 text-sm text-gray-500">No reviews submitted yet.</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="mt-4 overflow-hidden rounded-xl border border-gray-200">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Reviewer</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rating</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Comment</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    @forelse ($gadget->reviews as $review)
+                                        <tr>
+                                            <td class="px-4 py-4 text-sm text-gray-900">{{ $review->user?->name ?? 'Customer' }}</td>
+                                            <td class="px-4 py-4 text-sm">
+                                                <div class="text-amber-500">
+                                                    @for ($star = 1; $star <= 5; $star++)
+                                                        <span class="{{ $star <= $review->rating ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                                    @endfor
+                                                </div>
+                                                <div class="mt-1 text-xs text-gray-500">{{ $review->rating }}/5</div>
+                                            </td>
+                                            <td class="px-4 py-4 text-sm whitespace-pre-line text-gray-700">{{ $review->comment ?: 'No written comment provided.' }}</td>
+                                            <td class="px-4 py-4 text-sm text-gray-500">{{ $review->created_at->format('Y-m-d H:i') }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-8 text-center text-sm text-gray-500">No reviews available for this gadget yet.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

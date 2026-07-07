@@ -195,7 +195,7 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                <div class="flex justify-end gap-2">
+                                                <div class="ml-auto flex max-w-sm flex-col items-end gap-3">
                                                     @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
                                                         <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
                                                             Pay Now
@@ -212,10 +212,56 @@
                                                         </form>
                                                     @endif
 
-                                                    @if ($rental->status !== 'approved' || $rental->pickup_type !== 'delivery' || $rental->payment_status !== 'pending')
-                                                        @if ($rental->status !== 'pending')
-                                                            <span class="text-gray-400">-</span>
+                                                    @if ($rental->status === 'completed')
+                                                        @if ($rental->review)
+                                                            <div class="w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
+                                                                <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">Your Review</p>
+                                                                <div class="mt-2 flex items-center gap-2">
+                                                                    <span class="text-sm font-semibold text-amber-900">
+                                                                        @for ($star = 1; $star <= 5; $star++)
+                                                                            <span class="{{ $star <= $rental->review->rating ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                                                        @endfor
+                                                                    </span>
+                                                                    <span class="text-xs text-amber-800">{{ $rental->review->rating }}/5</span>
+                                                                </div>
+                                                                <p class="mt-3 whitespace-pre-line text-sm text-amber-900">
+                                                                    {{ $rental->review->comment ?: 'No written comment provided.' }}
+                                                                </p>
+                                                            </div>
+                                                        @else
+                                                            <form method="POST" action="{{ route('customer.rentals.review.store', $rental) }}" class="w-full rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-left">
+                                                                @csrf
+                                                                <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Leave a Review</p>
+                                                                <div class="mt-3">
+                                                                    <label for="rating-{{ $rental->id }}" class="block text-xs font-medium text-indigo-900">Rating</label>
+                                                                    <select id="rating-{{ $rental->id }}" name="rating" class="mt-1 block w-full rounded-md border-indigo-200 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-400" required>
+                                                                        <option value="">Select a rating</option>
+                                                                        @for ($rating = 5; $rating >= 1; $rating--)
+                                                                            <option value="{{ $rating }}" @selected((string) old('rating') === (string) $rating)>
+                                                                                {{ $rating }} star{{ $rating === 1 ? '' : 's' }}
+                                                                            </option>
+                                                                        @endfor
+                                                                    </select>
+                                                                    <x-input-error class="mt-2" :messages="$errors->get('rating')" />
+                                                                </div>
+                                                                <div class="mt-3">
+                                                                    <label for="comment-{{ $rental->id }}" class="block text-xs font-medium text-indigo-900">Comment</label>
+                                                                    <textarea id="comment-{{ $rental->id }}" name="comment" rows="3" class="mt-1 block w-full rounded-md border-indigo-200 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-400" maxlength="1000" placeholder="Share a few thoughts about the gadget and rental experience.">{{ old('comment') }}</textarea>
+                                                                    <x-input-error class="mt-2" :messages="$errors->get('comment')" />
+                                                                </div>
+                                                                <button type="submit" class="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500">
+                                                                    Submit Review
+                                                                </button>
+                                                            </form>
                                                         @endif
+                                                    @endif
+
+                                                    @if (
+                                                        $rental->status !== 'pending'
+                                                        && ! ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                        && $rental->status !== 'completed'
+                                                    )
+                                                        <span class="text-gray-400">-</span>
                                                     @endif
                                                 </div>
                                             </td>

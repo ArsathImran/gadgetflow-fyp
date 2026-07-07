@@ -17,7 +17,7 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isCustomer(), 403);
 
         $rentals = Rental::query()
-            ->with(['gadget', 'collectedByAdmin'])
+            ->with(['gadget.category', 'collectedByAdmin', 'review'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);

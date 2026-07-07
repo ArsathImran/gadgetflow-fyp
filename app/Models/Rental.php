@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Rental extends Model
 {
@@ -92,5 +93,10 @@ class Rental extends Model
     public function collectedByAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'payment_collected_by');
+    }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(Review::class);
     }
 }

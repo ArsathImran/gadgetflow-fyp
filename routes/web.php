@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerGadgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -21,6 +22,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals', [RentalController::class, 'store'])->name('customer.rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('customer.rentals.index');
     Route::patch('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('customer.rentals.cancel');
+    Route::post('/rentals/{rental}/review', [ReviewController::class, 'store'])->name('customer.rentals.review.store');
     Route::get('/rentals/{rental}/payment', [RentalController::class, 'paymentCreate'])->name('customer.rentals.payment.create');
     Route::post('/rentals/{rental}/payment', [RentalController::class, 'paymentStore'])->name('customer.rentals.payment.store');
 });

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Gadget extends Model
 {
@@ -37,5 +37,33 @@ class Gadget extends Model
     public function rentals(): HasMany
     {
         return $this->hasMany(Rental::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function averageRating(): ?float
+    {
+        $average = $this->reviews_avg_rating
+            ?? ($this->relationLoaded('reviews')
+                ? $this->reviews->avg('rating')
+                : $this->reviews()->avg('rating'));
+
+        return $average !== null ? round((float) $average, 1) : null;
+    }
+
+    public function reviewsCount(): int
+    {
+        if (isset($this->reviews_count)) {
+            return (int) $this->reviews_count;
+        }
+
+        if ($this->relationLoaded('reviews')) {
+            return $this->reviews->count();
+        }
+
+        return $this->reviews()->count();
     }
 }

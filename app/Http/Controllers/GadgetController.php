@@ -100,7 +100,10 @@ class GadgetController extends Controller
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
 
-        $gadget->load('category');
+        $gadget->load([
+            'category',
+            'reviews' => fn ($query) => $query->with('user')->latest(),
+        ])->loadCount('reviews')->loadAvg('reviews', 'rating');
 
         return view('gadgets.show', compact('gadget'));
     }

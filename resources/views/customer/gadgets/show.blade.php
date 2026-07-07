@@ -5,6 +5,8 @@
             ->merge($gadget->gallery_images ?? [])
             ->values();
         $initialImage = $galleryImages->first();
+        $averageRating = $gadget->averageRating();
+        $reviewsCount = $gadget->reviewsCount();
     @endphp
 
     <x-slot name="header">
@@ -77,7 +79,7 @@
                             </span>
                         </div>
 
-                        <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                        <div class="mt-6 grid gap-4 sm:grid-cols-4">
                             <div class="rounded-2xl bg-gray-50 p-4">
                                 <p class="text-sm text-gray-500">Daily Rental Price</p>
                                 <p class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($gadget->daily_rental_price, 2) }}</p>
@@ -89,6 +91,22 @@
                             <div class="rounded-2xl bg-gray-50 p-4">
                                 <p class="text-sm text-gray-500">Quantity</p>
                                 <p class="mt-1 text-lg font-semibold text-gray-900">{{ $gadget->quantity }}</p>
+                            </div>
+                            <div class="rounded-2xl bg-gray-50 p-4">
+                                <p class="text-sm text-gray-500">Customer Rating</p>
+                                @if ($averageRating)
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <span class="text-lg leading-none text-amber-500">
+                                            @for ($star = 1; $star <= 5; $star++)
+                                                <span class="{{ $star <= round($averageRating) ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                            @endfor
+                                        </span>
+                                        <span class="text-sm font-semibold text-gray-900">{{ number_format($averageRating, 1) }}</span>
+                                    </div>
+                                    <p class="mt-1 text-xs text-gray-500">{{ $reviewsCount }} review{{ $reviewsCount === 1 ? '' : 's' }}</p>
+                                @else
+                                    <p class="mt-1 text-sm text-gray-500">No reviews yet</p>
+                                @endif
                             </div>
                         </div>
 
@@ -113,6 +131,51 @@
                                 {{ $gadget->description ?: 'No description provided.' }}
                             </p>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 rounded-3xl bg-white shadow-sm">
+                <div class="p-6 sm:p-8">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Recent Reviews</h3>
+                            <p class="mt-1 text-sm text-gray-500">Feedback from customers who completed a rental for this gadget.</p>
+                        </div>
+                        @if ($averageRating)
+                            <div class="text-right">
+                                <div class="text-sm font-semibold text-amber-600">{{ number_format($averageRating, 1) }} / 5</div>
+                                <div class="text-xs text-gray-500">{{ $reviewsCount }} total review{{ $reviewsCount === 1 ? '' : 's' }}</div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-6 space-y-4">
+                        @forelse ($gadget->reviews as $review)
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <p class="font-semibold text-gray-900">{{ $review->user?->name ?? 'Customer' }}</p>
+                                        <div class="mt-1 text-amber-500">
+                                            @for ($star = 1; $star <= 5; $star++)
+                                                <span class="{{ $star <= $review->rating ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                            @endfor
+                                            <span class="ml-2 text-xs font-medium text-gray-500">{{ $review->rating }}/5</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500">{{ $review->created_at->format('Y-m-d') }}</p>
+                                </div>
+
+                                <p class="mt-3 whitespace-pre-line text-sm leading-6 text-gray-700">
+                                    {{ $review->comment ?: 'No written comment provided.' }}
+                                </p>
+                            </div>
+                        @empty
+                            <div class="rounded-2xl border border-dashed border-gray-300 px-6 py-10 text-center">
+                                <p class="text-sm font-semibold text-gray-900">No reviews yet.</p>
+                                <p class="mt-2 text-sm text-gray-500">Completed customer rentals will start appearing here once reviews are submitted.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

@@ -143,6 +143,10 @@
                                         </div>
 
                                         <div class="p-4">
+                                            @php
+                                                $averageRating = $gadget->averageRating();
+                                                $reviewsCount = $gadget->reviewsCount();
+                                            @endphp
                                             <h3 class="text-sm font-semibold text-gray-900 truncate">
                                                 {{ $gadget->name }}
                                             </h3>
@@ -160,6 +164,20 @@
                                             <p class="mt-2 text-xs font-medium text-emerald-600">
                                                 Stock: {{ $gadget->quantity }} available
                                             </p>
+
+                                            <div class="mt-3 flex items-center gap-2 text-xs">
+                                                @if ($averageRating)
+                                                    <span class="text-amber-500">
+                                                        @for ($star = 1; $star <= 5; $star++)
+                                                            <span class="{{ $star <= round($averageRating) ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                                        @endfor
+                                                    </span>
+                                                    <span class="font-medium text-gray-700">{{ number_format($averageRating, 1) }}</span>
+                                                    <span class="text-gray-500">({{ $reviewsCount }})</span>
+                                                @else
+                                                    <span class="text-gray-400">No reviews yet</span>
+                                                @endif
+                                            </div>
 
                                             <div class="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">
                                                 View Product

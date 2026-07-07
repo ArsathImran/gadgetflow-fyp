@@ -20,6 +20,8 @@ class CustomerGadgetController extends Controller
 
         $gadgets = Gadget::query()
             ->with('category')
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->where('status', 'active')
             ->where('quantity', '>', 0)
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -39,7 +41,10 @@ class CustomerGadgetController extends Controller
     {
         abort_unless($gadget->status === 'active' && $gadget->quantity > 0, 404);
 
-        $gadget->load('category');
+        $gadget->load([
+            'category',
+            'reviews' => fn ($query) => $query->with('user')->latest()->limit(10),
+        ])->loadCount('reviews')->loadAvg('reviews', 'rating');
 
         return view('customer.gadgets.show', compact('gadget'));
     }
