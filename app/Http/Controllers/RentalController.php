@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Gadget;
 use App\Models\Rental;
+use App\Notifications\PaymentRejected;
+use App\Notifications\PaymentVerified;
+use App\Notifications\RentalApproved;
+use App\Notifications\RentalCompleted;
+use App\Notifications\RentalRejected;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -200,6 +205,9 @@ class RentalController extends Controller
             ]);
         });
 
+        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->user->notify(new RentalApproved($rental));
+
         return back()->with('success', 'Rental request approved.');
     }
 
@@ -212,6 +220,9 @@ class RentalController extends Controller
         }
 
         $rental->update(['status' => 'rejected']);
+
+        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->user->notify(new RentalRejected($rental));
 
         return back()->with('success', 'Rental request rejected.');
     }
@@ -306,6 +317,9 @@ class RentalController extends Controller
             ]);
         });
 
+        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->user->notify(new RentalCompleted($rental));
+
         return back()->with('success', 'Rental marked as returned successfully.');
     }
 
@@ -327,6 +341,9 @@ class RentalController extends Controller
             'shipping_status' => 'waiting_for_shipping',
         ]);
 
+        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->user->notify(new PaymentVerified($rental));
+
         return back()->with('success', 'Payment verified successfully.');
     }
 
@@ -346,6 +363,9 @@ class RentalController extends Controller
         $rental->update([
             'payment_status' => 'rejected',
         ]);
+
+        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->user->notify(new PaymentRejected($rental));
 
         return back()->with('success', 'Payment rejected successfully.');
     }
