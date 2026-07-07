@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Gadget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class GadgetController extends Controller
 {
@@ -58,6 +59,8 @@ class GadgetController extends Controller
 
         $validated = $request->validate([
             'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'daily_rental_price' => ['required', 'numeric', 'min:0'],
@@ -66,12 +69,22 @@ class GadgetController extends Controller
             'late_fee_per_day' => ['nullable', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
+            'gallery_images' => ['nullable', 'array', 'max:6'],
+            'gallery_images.*' => ['image', 'max:2048'],
             'status' => ['required', 'in:active,inactive'],
+            'condition' => ['required', 'in:new,like_new,good,fair'],
         ]);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('gadgets', 'public');
         }
+
+        $validated['gallery_images'] = $request->hasFile('gallery_images')
+            ? collect($request->file('gallery_images'))
+                ->map(fn ($file) => $file->store('gadgets', 'public'))
+                ->values()
+                ->all()
+            : null;
 
         Gadget::create($validated);
 
@@ -115,6 +128,8 @@ class GadgetController extends Controller
 
         $validated = $request->validate([
             'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'daily_rental_price' => ['required', 'numeric', 'min:0'],
@@ -123,8 +138,28 @@ class GadgetController extends Controller
             'late_fee_per_day' => ['nullable', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'max:2048'],
+            'gallery_images' => ['nullable', 'array', 'max:6'],
+            'gallery_images.*' => ['image', 'max:2048'],
+            'remove_gallery_images' => ['nullable', 'array'],
+            'remove_gallery_images.*' => ['string'],
             'status' => ['required', 'in:active,inactive'],
+            'condition' => ['required', 'in:new,like_new,good,fair'],
         ]);
+
+        $existingGalleryImages = collect($gadget->gallery_images ?? []);
+        $removedGalleryImages = collect($validated['remove_gallery_images'] ?? [])
+            ->filter(fn ($path) => $existingGalleryImages->contains($path))
+            ->values();
+        $remainingGalleryImages = $existingGalleryImages
+            ->reject(fn ($path) => $removedGalleryImages->contains($path))
+            ->values();
+        $newGalleryImageFiles = collect($request->file('gallery_images', []));
+
+        if ($remainingGalleryImages->count() + $newGalleryImageFiles->count() > 6) {
+            throw ValidationException::withMessages([
+                'gallery_images' => 'You may keep up to 6 gallery images in total.',
+            ]);
+        }
 
         if ($request->hasFile('image')) {
             if ($gadget->image) {
@@ -135,6 +170,19 @@ class GadgetController extends Controller
         } else {
             unset($validated['image']);
         }
+
+        if ($removedGalleryImages->isNotEmpty()) {
+            Storage::disk('public')->delete($removedGalleryImages->all());
+        }
+
+        $validated['gallery_images'] = $remainingGalleryImages
+            ->merge(
+                $newGalleryImageFiles->map(fn ($file) => $file->store('gadgets', 'public'))
+            )
+            ->values()
+            ->all();
+
+        unset($validated['remove_gallery_images']);
 
         $gadget->update($validated);
 
@@ -152,6 +200,10 @@ class GadgetController extends Controller
 
         if ($gadget->image) {
             Storage::disk('public')->delete($gadget->image);
+        }
+
+        if (!empty($gadget->gallery_images)) {
+            Storage::disk('public')->delete($gadget->gallery_images);
         }
 
         $gadget->delete();

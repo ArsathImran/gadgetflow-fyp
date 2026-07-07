@@ -91,7 +91,12 @@
                                                 </div>
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $gadget->name }}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ $gadget->name }}</div>
+                                            @if ($gadget->brand || $gadget->model)
+                                                <div class="mt-1 text-xs text-gray-500">{{ collect([$gadget->brand, $gadget->model])->filter()->implode(' ') }}</div>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $gadget->category?->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ number_format($gadget->daily_rental_price, 2) }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ $gadget->hourly_rental_price !== null ? number_format($gadget->hourly_rental_price, 2) : '-' }}</td>

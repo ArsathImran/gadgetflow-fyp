@@ -1,4 +1,12 @@
 <x-app-layout>
+    @php
+        $galleryImages = collect([$gadget->image])
+            ->filter()
+            ->merge($gadget->gallery_images ?? [])
+            ->values();
+        $initialImage = $galleryImages->first();
+    @endphp
+
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -23,13 +31,34 @@
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
             <div class="overflow-hidden rounded-3xl bg-white shadow-sm">
                 <div class="grid gap-0 lg:grid-cols-[1.1fr_0.9fr]">
-                    <div class="bg-gray-100">
-                        @if ($gadget->image)
-                            <img
-                                src="{{ asset('storage/' . $gadget->image) }}"
-                                alt="{{ $gadget->name }}"
-                                class="h-full min-h-[320px] w-full object-cover"
-                            >
+                    <div class="bg-gray-100" x-data="{ selectedImage: @js($initialImage ? asset('storage/' . $initialImage) : null) }">
+                        @if ($galleryImages->isNotEmpty())
+                            <div class="flex min-h-[320px] items-center justify-center overflow-hidden bg-white">
+                                <img
+                                    :src="selectedImage"
+                                    alt="{{ $gadget->name }}"
+                                    class="h-full min-h-[320px] w-full object-cover"
+                                >
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-3 border-t border-gray-200 bg-white p-4 sm:grid-cols-5">
+                                @foreach ($galleryImages as $galleryImage)
+                                    @php
+                                        $galleryImageUrl = asset('storage/' . $galleryImage);
+                                    @endphp
+                                    <button
+                                        type="button"
+                                        @click="selectedImage = @js($galleryImageUrl)"
+                                        class="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 transition hover:border-indigo-300 hover:ring-2 hover:ring-indigo-100"
+                                    >
+                                        <img
+                                            src="{{ $galleryImageUrl }}"
+                                            alt="{{ $gadget->name }} image {{ $loop->iteration }}"
+                                            class="h-20 w-full object-cover"
+                                        >
+                                    </button>
+                                @endforeach
+                            </div>
                         @else
                             <div class="flex min-h-[320px] items-center justify-center text-sm text-gray-400">
                                 No image available
@@ -60,6 +89,21 @@
                             <div class="rounded-2xl bg-gray-50 p-4">
                                 <p class="text-sm text-gray-500">Quantity</p>
                                 <p class="mt-1 text-lg font-semibold text-gray-900">{{ $gadget->quantity }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                                <p class="text-sm text-gray-500">Brand</p>
+                                <p class="mt-1 text-base font-semibold text-gray-900">{{ $gadget->brand ?: '-' }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                                <p class="text-sm text-gray-500">Model</p>
+                                <p class="mt-1 text-base font-semibold text-gray-900">{{ $gadget->model ?: '-' }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                                <p class="text-sm text-gray-500">Condition</p>
+                                <p class="mt-1 text-base font-semibold text-gray-900">{{ ucwords(str_replace('_', ' ', $gadget->condition)) }}</p>
                             </div>
                         </div>
 

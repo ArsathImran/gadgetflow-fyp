@@ -147,6 +147,12 @@
                                                 {{ $gadget->name }}
                                             </h3>
 
+                                            @if ($gadget->brand || $gadget->model)
+                                                <p class="mt-1 text-xs text-gray-500">
+                                                    {{ collect([$gadget->brand, $gadget->model])->filter()->implode(' ') }}
+                                                </p>
+                                            @endif
+
                                             <p class="mt-1 text-xs text-gray-500">
                                                 {{ $gadget->category->name ?? 'Uncategorized' }}
                                             </p>

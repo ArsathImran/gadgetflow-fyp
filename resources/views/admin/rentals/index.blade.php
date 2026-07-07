@@ -138,9 +138,16 @@
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
                                                     @if ($rental->status === 'approved') bg-green-100 text-green-800
                                                     @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
+                                                    @elseif ($rental->status === 'cancelled_by_customer') bg-rose-100 text-rose-800
                                                     @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
                                                     @else bg-yellow-100 text-yellow-800 @endif">
-                                                    {{ $rental->status === 'completed' ? 'Completed' : ucfirst($rental->status) }}
+                                                    {{
+                                                        match ($rental->status) {
+                                                            'completed' => 'Completed',
+                                                            'cancelled_by_customer' => 'Cancelled by Customer',
+                                                            default => ucfirst($rental->status),
+                                                        }
+                                                    }}
                                                 </span>
                                                 @if ($rental->isOverdue())
                                                     <div class="mt-2">

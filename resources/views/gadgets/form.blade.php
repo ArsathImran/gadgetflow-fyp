@@ -57,6 +57,32 @@
                             <x-input-error class="mt-2" :messages="$errors->get('name')" />
                         </div>
 
+                        <div class="grid gap-6 sm:grid-cols-2">
+                            <div>
+                                <x-input-label for="brand" :value="__('Brand')" />
+                                <x-text-input
+                                    id="brand"
+                                    name="brand"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    :value="old('brand', $isEditing ? $gadget->brand : '')"
+                                />
+                                <x-input-error class="mt-2" :messages="$errors->get('brand')" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="model" :value="__('Model')" />
+                                <x-text-input
+                                    id="model"
+                                    name="model"
+                                    type="text"
+                                    class="mt-1 block w-full"
+                                    :value="old('model', $isEditing ? $gadget->model : '')"
+                                />
+                                <x-input-error class="mt-2" :messages="$errors->get('model')" />
+                            </div>
+                        </div>
+
                         <div>
                             <x-input-label for="description" :value="__('Description')" />
                             <textarea
@@ -146,6 +172,22 @@
                             </div>
 
                             <div>
+                                <x-input-label for="condition" :value="__('Condition')" />
+                                <select
+                                    id="condition"
+                                    name="condition"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    required
+                                >
+                                    <option value="new" @selected(old('condition', $isEditing ? $gadget->condition : 'good') === 'new')>New</option>
+                                    <option value="like_new" @selected(old('condition', $isEditing ? $gadget->condition : 'good') === 'like_new')>Like New</option>
+                                    <option value="good" @selected(old('condition', $isEditing ? $gadget->condition : 'good') === 'good')>Good</option>
+                                    <option value="fair" @selected(old('condition', $isEditing ? $gadget->condition : 'good') === 'fair')>Fair</option>
+                                </select>
+                                <x-input-error class="mt-2" :messages="$errors->get('condition')" />
+                            </div>
+
+                            <div>
                                 <x-input-label for="status" :value="__('Status')" />
                                 <select
                                     id="status"
@@ -178,6 +220,51 @@
                                         alt="{{ $gadget->name }}"
                                         class="mt-2 h-40 w-40 rounded-lg object-cover border border-gray-200"
                                     >
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <x-input-label for="gallery_images" :value="__('Gallery Images')" />
+                            <input
+                                id="gallery_images"
+                                name="gallery_images[]"
+                                type="file"
+                                multiple
+                                class="mt-1 block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
+                            >
+                            <p class="mt-2 text-sm text-gray-500">
+                                Upload up to 6 additional photos for the gadget detail page. These are separate from the cover image above.
+                            </p>
+                            <x-input-error class="mt-2" :messages="$errors->get('gallery_images')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('gallery_images.*')" />
+
+                            @if ($isEditing && !empty($gadget->gallery_images))
+                                <div class="mt-4">
+                                    <p class="text-sm font-medium text-gray-500">Existing Gallery Images</p>
+                                    <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        @foreach ($gadget->gallery_images as $galleryImage)
+                                            <label class="overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                                                <img
+                                                    src="{{ asset('storage/' . $galleryImage) }}"
+                                                    alt="{{ $gadget->name }} gallery image {{ $loop->iteration }}"
+                                                    class="h-32 w-full object-cover"
+                                                >
+                                                <div class="flex items-center gap-2 px-3 py-3 text-sm text-gray-700">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="remove_gallery_images[]"
+                                                        value="{{ $galleryImage }}"
+                                                        @checked(in_array($galleryImage, old('remove_gallery_images', []), true))
+                                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                    >
+                                                    <span>Remove this image</span>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images')" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images.*')" />
                                 </div>
                             @endif
                         </div>

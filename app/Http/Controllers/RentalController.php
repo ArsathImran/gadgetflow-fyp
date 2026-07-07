@@ -140,6 +140,27 @@ class RentalController extends Controller
             ->with('success', 'Payment proof uploaded successfully.');
     }
 
+    public function cancel(Rental $rental)
+    {
+        abort_unless(auth()->check(), 403);
+        abort_unless(auth()->user()->isCustomer(), 403);
+        abort_unless($rental->user_id === auth()->id(), 403);
+
+        if ($rental->status !== 'pending') {
+            return redirect()
+                ->route('customer.rentals.index')
+                ->with('error', 'Only pending rental requests can be cancelled.');
+        }
+
+        $rental->update([
+            'status' => 'cancelled_by_customer',
+        ]);
+
+        return redirect()
+            ->route('customer.rentals.index')
+            ->with('success', 'Your rental request has been cancelled.');
+    }
+
     public function adminIndex()
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);

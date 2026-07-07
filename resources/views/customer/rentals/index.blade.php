@@ -24,6 +24,12 @@
                         </div>
                     @endif
 
+                    @if (session('error'))
+                        <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     @if ($rentals->count())
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -159,9 +165,16 @@
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
                                                     @if ($rental->status === 'approved') bg-green-100 text-green-800
                                                     @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
+                                                    @elseif ($rental->status === 'cancelled_by_customer') bg-rose-100 text-rose-800
                                                     @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
                                                     @else bg-yellow-100 text-yellow-800 @endif">
-                                                    {{ $rental->status === 'completed' ? 'Completed' : ucfirst($rental->status) }}
+                                                    {{
+                                                        match ($rental->status) {
+                                                            'completed' => 'Completed',
+                                                            'cancelled_by_customer' => 'Cancelled by Customer',
+                                                            default => ucfirst($rental->status),
+                                                        }
+                                                    }}
                                                 </span>
                                                 @if ($rental->isOverdue())
                                                     <div class="mt-2">
@@ -182,13 +195,29 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
-                                                    <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
-                                                        Pay Now
-                                                    </a>
-                                                @else
-                                                    <span class="text-gray-400">-</span>
-                                                @endif
+                                                <div class="flex justify-end gap-2">
+                                                    @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                        <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
+                                                            Pay Now
+                                                        </a>
+                                                    @endif
+
+                                                    @if ($rental->status === 'pending')
+                                                        <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" onsubmit="return confirm('Are you sure you want to cancel this rental request?');">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <button type="submit" class="inline-flex items-center rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
+                                                                Cancel Request
+                                                            </button>
+                                                        </form>
+                                                    @endif
+
+                                                    @if ($rental->status !== 'approved' || $rental->pickup_type !== 'delivery' || $rental->payment_status !== 'pending')
+                                                        @if ($rental->status !== 'pending')
+                                                            <span class="text-gray-400">-</span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

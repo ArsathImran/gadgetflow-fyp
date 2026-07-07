@@ -10,6 +10,8 @@ class Gadget extends Model
 {
     protected $fillable = [
         'category_id',
+        'brand',
+        'model',
         'name',
         'description',
         'daily_rental_price',
@@ -18,7 +20,13 @@ class Gadget extends Model
         'late_fee_per_day',
         'quantity',
         'image',
+        'gallery_images',
         'status',
+        'condition',
+    ];
+
+    protected $casts = [
+        'gallery_images' => 'array',
     ];
 
     public function category(): BelongsTo
