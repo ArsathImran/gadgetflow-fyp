@@ -34,7 +34,10 @@ Route::resource('categories', CategoryController::class)->middleware(['auth']);
 Route::resource('gadgets', GadgetController::class)->middleware(['auth']);
 
 Route::middleware('auth')->group(function () {
+    Route::get('/admin/scan', [RentalController::class, 'scan'])->name('admin.scan');
+    Route::post('/admin/scan/lookup', [RentalController::class, 'lookupByToken'])->name('admin.scan.lookup');
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('admin.rentals.index');
+    Route::post('/admin/rentals/{rental}/confirm-handover', [RentalController::class, 'confirmHandover'])->name('admin.scan.confirm-handover');
     Route::patch('/admin/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('admin.rentals.approve');
     Route::patch('/admin/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('admin.rentals.reject');
     Route::patch('/admin/rentals/{rental}/payment/collect', [RentalController::class, 'collectPayment'])->name('admin.rentals.payment.collect');

@@ -57,7 +57,7 @@
                                             $daysOverdue = $rental->daysOverdue();
                                             $calculatedLateFee = $daysOverdue * (float) ($rental->gadget?->late_fee_per_day ?? 0);
                                         @endphp
-                                        <tr>
+                                        <tr id="rental-{{ $rental->id }}">
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ $rental->user?->name ?? '-' }}
                                             </td>

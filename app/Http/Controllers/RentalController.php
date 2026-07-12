@@ -199,6 +199,70 @@ class RentalController extends Controller
         return view('admin.rentals.index', compact('rentals'));
     }
 
+    public function scan()
+    {
+        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+
+        return view('admin.scan');
+    }
+
+    public function lookupByToken(Request $request)
+    {
+        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+
+        $validated = $request->validate([
+            'qr_token' => ['required', 'string'],
+        ]);
+
+        $rental = Rental::query()
+            ->with(['gadget', 'user'])
+            ->where('qr_token', $validated['qr_token'])
+            ->first();
+
+        if (! $rental) {
+            return response()->json([
+                'message' => 'No rental was found for the scanned QR code.',
+            ], 404);
+        }
+
+        return response()->json([
+            'id' => $rental->id,
+            'gadget_name' => $rental->gadget?->name,
+            'customer_name' => $rental->user?->name,
+            'status' => $rental->status,
+            'handed_over_at' => $rental->handed_over_at?->toIso8601String(),
+            'returned_at' => $rental->returned_at?->toIso8601String(),
+            'pickup_type' => $rental->pickup_type,
+            'next_action' => $this->determineScanNextAction($rental),
+        ]);
+    }
+
+    public function confirmHandover(Rental $rental)
+    {
+        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+
+        if ($rental->status !== 'approved') {
+            return response()->json([
+                'message' => 'Only approved rentals can be handed over.',
+            ], 422);
+        }
+
+        if ($rental->handed_over_at !== null) {
+            return response()->json([
+                'message' => 'This rental has already been marked as handed over.',
+            ], 422);
+        }
+
+        $rental->update([
+            'handed_over_at' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Handover confirmed successfully.',
+            'handed_over_at' => $rental->fresh()->handed_over_at?->toIso8601String(),
+        ]);
+    }
+
     public function approve(Rental $rental)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
@@ -430,5 +494,22 @@ class RentalController extends Controller
         } while (Rental::query()->where('qr_token', $token)->exists());
 
         return $token;
+    }
+
+    private function determineScanNextAction(Rental $rental): string
+    {
+        if ($rental->returned_at !== null) {
+            return 'already_completed';
+        }
+
+        if ($rental->handed_over_at !== null) {
+            return 'return';
+        }
+
+        if ($rental->status === 'approved') {
+            return 'handover';
+        }
+
+        return 'not_ready';
     }
 }
