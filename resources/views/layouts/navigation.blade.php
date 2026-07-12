@@ -19,6 +19,9 @@
                         <x-nav-link :href="route('gadgets.index')" :active="request()->routeIs('gadgets.*')">
                             {{ __('Gadgets') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.bundles.index')" :active="request()->routeIs('admin.bundles.*')">
+                            {{ __('Bundles') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                             {{ __('Rental Requests') }}
                         </x-nav-link>
@@ -29,11 +32,20 @@
                             {{ __('Customers') }}
                         </x-nav-link>
                     @else
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">
                             {{ __('Browse Gadgets') }}
                         </x-nav-link>
                         <x-nav-link :href="route('customer.rentals.index')" :active="request()->routeIs('customer.rentals.*')">
                             {{ __('My Rentals') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('customer.bundles.index', ['type' => 'wedding'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'wedding'">
+                            {{ __('Wedding Combo') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('customer.bundles.index', ['type' => 'short_film'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'short_film'">
+                            {{ __('Short Film Combo') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -94,6 +106,9 @@
                 <x-responsive-nav-link :href="route('gadgets.index')" :active="request()->routeIs('gadgets.*')">
                     {{ __('Gadgets') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.bundles.index')" :active="request()->routeIs('admin.bundles.*')">
+                    {{ __('Bundles') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                     {{ __('Rental Requests') }}
                 </x-responsive-nav-link>
@@ -104,11 +119,20 @@
                     {{ __('Customers') }}
                 </x-responsive-nav-link>
             @else
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    {{ __('Dashboard') }}
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">
                     {{ __('Browse Gadgets') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('customer.rentals.index')" :active="request()->routeIs('customer.rentals.*')">
                     {{ __('My Rentals') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('customer.bundles.index', ['type' => 'wedding'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'wedding'">
+                    {{ __('Wedding Combo') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('customer.bundles.index', ['type' => 'short_film'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'short_film'">
+                    {{ __('Short Film Combo') }}
                 </x-responsive-nav-link>
             @endif
         </div>

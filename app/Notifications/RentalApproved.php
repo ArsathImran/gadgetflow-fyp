@@ -22,7 +22,7 @@ class RentalApproved extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $gadgetName = $this->rental->gadget?->name ?? 'your selected gadget';
+        $gadgetName = $this->rental->itemName();
         $rentalPeriod = $this->rental->start_date && $this->rental->end_date
             ? $this->rental->start_date . ' to ' . $this->rental->end_date
             : 'your scheduled rental period';

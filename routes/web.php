@@ -3,8 +3,10 @@
 use App\Http\Controllers\GadgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerBundleController;
 use App\Http\Controllers\CustomerGadgetController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\BundleController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -18,6 +20,8 @@ Route::get('/', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/combos', [CustomerBundleController::class, 'index'])->name('customer.bundles.index');
+    Route::get('/combos/{bundle}', [CustomerBundleController::class, 'show'])->name('customer.bundles.show');
     Route::get('/browse-gadgets', [CustomerGadgetController::class, 'index'])->name('customer.gadgets.index');
     Route::get('/browse-gadgets/{gadget}', [CustomerGadgetController::class, 'show'])->name('customer.gadgets.show');
     Route::get('/rentals/create/{gadget}', [RentalController::class, 'create'])->name('rentals.create');
@@ -37,6 +41,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/scan', [RentalController::class, 'scan'])->name('admin.scan');
     Route::post('/admin/scan/lookup', [RentalController::class, 'lookupByToken'])->name('admin.scan.lookup');
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('admin.rentals.index');
+    Route::get('/admin/bundles', [BundleController::class, 'index'])->name('admin.bundles.index');
+    Route::get('/admin/bundles/create', [BundleController::class, 'create'])->name('admin.bundles.create');
+    Route::post('/admin/bundles', [BundleController::class, 'store'])->name('admin.bundles.store');
+    Route::get('/admin/bundles/{bundle}/edit', [BundleController::class, 'edit'])->name('admin.bundles.edit');
+    Route::put('/admin/bundles/{bundle}', [BundleController::class, 'update'])->name('admin.bundles.update');
+    Route::delete('/admin/bundles/{bundle}', [BundleController::class, 'destroy'])->name('admin.bundles.destroy');
     Route::post('/admin/rentals/{rental}/confirm-handover', [RentalController::class, 'confirmHandover'])->name('admin.scan.confirm-handover');
     Route::patch('/admin/rentals/{rental}/approve', [RentalController::class, 'approve'])->name('admin.rentals.approve');
     Route::patch('/admin/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('admin.rentals.reject');

@@ -223,7 +223,12 @@
                             @forelse ($upcomingDueDates as $rental)
                                 <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
                                     <div>
-                                        <p class="font-semibold text-slate-900">{{ $rental->gadget?->name ?? 'Unknown Gadget' }}</p>
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <p class="font-semibold text-slate-900">{{ $rental->itemName() }}</p>
+                                            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                                {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                            </span>
+                                        </div>
                                         <p class="mt-1 text-sm text-slate-500">Due on {{ $rental->end_date }}</p>
                                     </div>
                                     @if ($rental->isOverdue())

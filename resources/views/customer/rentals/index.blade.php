@@ -35,7 +35,7 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gadget</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rental Item</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Pickup</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates / Hours</th>
@@ -59,8 +59,15 @@
                                         @endphp
                                         <tr>
                                             <td class="px-6 py-4">
-                                                <div class="font-medium text-gray-900">{{ $rental->gadget?->name ?? '-' }}</div>
-                                                <div class="text-sm text-gray-500">{{ $rental->gadget?->category?->name ?? '-' }}</div>
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <div class="font-medium text-gray-900">{{ $rental->itemName() }}</div>
+                                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                                        {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    {{ $rental->isBundle() ? ($rental->bundle?->type === 'wedding' ? 'Wedding Combo' : 'Short Film Combo') : ($rental->gadget?->category?->name ?? '-') }}
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ ucfirst($rental->rental_type) }}
@@ -91,8 +98,8 @@
                                                         <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Payment Receipt</p>
                                                         <div class="mt-3 space-y-2 text-xs text-emerald-900">
                                                             <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Gadget</span>
-                                                                <span class="text-right font-semibold">{{ $rental->gadget?->name ?? '-' }}</span>
+                                                                <span class="text-emerald-700">Rental Item</span>
+                                                                <span class="text-right font-semibold">{{ $rental->itemName() }}</span>
                                                             </div>
                                                             <div class="flex items-center justify-between gap-4">
                                                                 <span class="text-emerald-700">Rental Period</span>
@@ -223,7 +230,7 @@
                                                         </form>
                                                     @endif
 
-                                                    @if ($rental->status === 'completed')
+                                                    @if ($rental->status === 'completed' && ! $rental->isBundle())
                                                         @if ($rental->review)
                                                             <div class="w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
                                                                 <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">Your Review</p>
@@ -270,7 +277,7 @@
                                                     @if (
                                                         $rental->status !== 'pending'
                                                         && ! ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
-                                                        && $rental->status !== 'completed'
+                                                        && ! ($rental->status === 'completed' && ! $rental->isBundle())
                                                     )
                                                         <span class="text-gray-400">-</span>
                                                     @endif

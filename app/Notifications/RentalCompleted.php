@@ -22,7 +22,7 @@ class RentalCompleted extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $gadgetName = $this->rental->gadget?->name ?? 'your rental gadget';
+        $gadgetName = $this->rental->itemName();
         $depositStatus = match ($this->rental->deposit_status) {
             'refunded' => 'Your deposit was refunded in full: ' . number_format((float) ($this->rental->deposit_refund_amount ?? $this->rental->deposit_amount ?? 0), 2) . '.',
             'partially_refunded' => 'Your deposit was partially refunded: ' . number_format((float) ($this->rental->deposit_refund_amount ?? 0), 2) . '.',

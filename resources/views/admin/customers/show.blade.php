@@ -70,7 +70,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gadget</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rental Item</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates / Hours</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Payment</th>
@@ -90,7 +90,12 @@
                                     @endphp
                                     <tr>
                                         <td class="px-6 py-4">
-                                            <div class="font-medium text-gray-900">{{ $rental->gadget?->name ?? '-' }}</div>
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <div class="font-medium text-gray-900">{{ $rental->itemName() }}</div>
+                                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                                    {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 text-sm text-gray-600">
                                             @if ($rental->rental_type === 'hour')

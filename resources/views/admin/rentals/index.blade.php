@@ -33,7 +33,7 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Customer</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Contact</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gadget</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rental Item</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Pickup</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Rental</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Dates / Hours</th>
@@ -55,7 +55,9 @@
                                                     : ucwords(str_replace('_', ' ', $rental->payment_status)));
                                             $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                                             $daysOverdue = $rental->daysOverdue();
-                                            $calculatedLateFee = $daysOverdue * (float) ($rental->gadget?->late_fee_per_day ?? 0);
+                                            $calculatedLateFee = $daysOverdue * (float) ($rental->isBundle()
+                                                ? ($rental->bundle?->late_fee_per_day ?? 0)
+                                                : ($rental->gadget?->late_fee_per_day ?? 0));
                                         @endphp
                                         <tr id="rental-{{ $rental->id }}">
                                             <td class="px-6 py-4 text-sm text-gray-600">
@@ -66,8 +68,15 @@
                                                 <div class="text-gray-500">{{ $rental->ic_number ?? '-' }}</div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="font-medium text-gray-900">{{ $rental->gadget?->name ?? '-' }}</div>
-                                                <div class="text-sm text-gray-500">{{ $rental->gadget?->category?->name ?? '-' }}</div>
+                                                <div class="flex flex-wrap items-center gap-2">
+                                                    <div class="font-medium text-gray-900">{{ $rental->itemName() }}</div>
+                                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                                        {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    {{ $rental->isBundle() ? ($rental->bundle?->type === 'wedding' ? 'Wedding Combo' : 'Short Film Combo') : ($rental->gadget?->category?->name ?? '-') }}
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 {{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}

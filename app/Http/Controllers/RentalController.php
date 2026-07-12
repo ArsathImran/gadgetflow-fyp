@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bundle;
 use App\Models\Gadget;
 use App\Models\Rental;
 use App\Notifications\PaymentRejected;
@@ -24,7 +25,7 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isCustomer(), 403);
 
         $rentals = Rental::query()
-            ->with(['gadget.category', 'collectedByAdmin', 'review'])
+            ->with(['gadget.category', 'bundle', 'collectedByAdmin', 'review'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
@@ -48,36 +49,55 @@ class RentalController extends Controller
         abort_if(auth()->user()->is_blocked, 403, 'Your account has been blocked from making rental requests. Please contact support.');
 
         $validated = $request->validate([
-            'gadget_id' => ['required', 'integer', 'exists:gadgets,id'],
+            'gadget_id' => ['nullable', 'integer', 'exists:gadgets,id', 'required_without:bundle_id'],
+            'bundle_id' => ['nullable', 'integer', 'exists:bundles,id', 'required_without:gadget_id'],
             'rental_type' => ['required', 'in:hour,day'],
             'rental_hours' => ['nullable', 'integer', 'min:1', 'required_if:rental_type,hour'],
             'start_date' => ['nullable', 'date', 'required_if:rental_type,day'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date', 'required_if:rental_type,day'],
-            'pickup_type' => ['required', 'in:walk_in,delivery'],
+            'pickup_type' => ['nullable', 'in:walk_in,delivery', 'required_without:bundle_id'],
             'delivery_address' => ['nullable', 'string', 'required_if:pickup_type,delivery'],
             'phone_number' => ['nullable', 'string', 'max:30', 'required_if:pickup_type,delivery'],
             'ic_number' => ['nullable', 'string', 'max:50', 'required_if:pickup_type,delivery'],
             'agreement_accepted' => ['accepted'],
         ]);
 
-        $gadget = Gadget::query()->findOrFail($validated['gadget_id']);
-        abort_unless($gadget->status === 'active' && $gadget->quantity > 0, 404);
+        if (! empty($validated['gadget_id']) && ! empty($validated['bundle_id'])) {
+            abort(422, 'A rental request can only be created for one item at a time.');
+        }
 
-        $totalAmount = $this->calculateTotalAmount($gadget, $validated);
+        $gadget = null;
+        $bundle = null;
+        $pickupType = $validated['pickup_type'] ?? 'walk_in';
+
+        if (! empty($validated['bundle_id'])) {
+            $bundle = Bundle::query()->findOrFail($validated['bundle_id']);
+            abort_unless($bundle->status === 'active', 404);
+            $pickupType = 'walk_in';
+        } else {
+            $gadget = Gadget::query()->findOrFail($validated['gadget_id']);
+            abort_unless($gadget->status === 'active' && $gadget->quantity > 0, 404);
+            abort_unless(in_array($pickupType, ['walk_in', 'delivery'], true), 422);
+        }
+
+        $totalAmount = $bundle
+            ? $this->calculateBundleTotalAmount($bundle, $validated)
+            : $this->calculateTotalAmount($gadget, $validated);
 
         $rentalDates = $this->resolveRentalDates($validated);
         $qrToken = $this->generateUniqueQrToken();
 
         Rental::create([
             'user_id' => auth()->id(),
-            'gadget_id' => $gadget->id,
+            'gadget_id' => $gadget?->id,
+            'bundle_id' => $bundle?->id,
             'qr_token' => $qrToken,
             'rental_type' => $validated['rental_type'],
             'rental_hours' => $validated['rental_type'] === 'hour' ? (int) $validated['rental_hours'] : null,
-            'pickup_type' => $validated['pickup_type'],
-            'delivery_address' => $validated['pickup_type'] === 'delivery' ? $validated['delivery_address'] : null,
-            'phone_number' => $validated['pickup_type'] === 'delivery' ? $validated['phone_number'] : null,
-            'ic_number' => $validated['pickup_type'] === 'delivery' ? $validated['ic_number'] : null,
+            'pickup_type' => $pickupType,
+            'delivery_address' => $pickupType === 'delivery' ? $validated['delivery_address'] : null,
+            'phone_number' => $pickupType === 'delivery' ? $validated['phone_number'] : null,
+            'ic_number' => $pickupType === 'delivery' ? $validated['ic_number'] : null,
             'agreement_accepted' => true,
             'payment_proof' => null,
             'payment_proofs' => null,
@@ -87,7 +107,7 @@ class RentalController extends Controller
             'start_date' => $rentalDates['start_date'],
             'end_date' => $rentalDates['end_date'],
             'total_amount' => $totalAmount,
-            'deposit_amount' => $gadget->deposit_amount,
+            'deposit_amount' => $bundle?->deposit_amount ?? $gadget?->deposit_amount ?? 0,
             'status' => 'pending',
         ]);
 
@@ -104,9 +124,9 @@ class RentalController extends Controller
         abort_unless($rental->status === 'approved', 403);
         abort_unless(! empty($rental->qr_token), 403);
 
-        $rental->load('gadget');
+        $rental->load(['gadget', 'bundle']);
 
-        $scanUrl = url('/admin/rentals/scan') . '?token=' . urlencode($rental->qr_token);
+        $scanUrl = route('admin.scan', ['token' => $rental->qr_token]);
         $qrSvg = QrCode::size(300)->generate($scanUrl);
 
         return view('customer.rentals.qr', compact('rental', 'qrSvg'));
@@ -121,7 +141,7 @@ class RentalController extends Controller
         abort_unless($rental->pickup_type === 'delivery', 403);
         abort_unless($rental->payment_status === 'pending', 403);
 
-        $rental->load('gadget');
+        $rental->load(['gadget', 'bundle']);
 
         return view('customer.rentals.payment', compact('rental'));
     }
@@ -192,7 +212,7 @@ class RentalController extends Controller
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
 
         $rentals = Rental::query()
-            ->with(['user', 'gadget', 'collectedByAdmin'])
+            ->with(['user', 'gadget.category', 'bundle', 'collectedByAdmin'])
             ->latest()
             ->paginate(10);
 
@@ -215,7 +235,7 @@ class RentalController extends Controller
         ]);
 
         $rental = Rental::query()
-            ->with(['gadget', 'user'])
+            ->with(['gadget', 'bundle', 'user'])
             ->where('qr_token', $validated['qr_token'])
             ->first();
 
@@ -227,7 +247,8 @@ class RentalController extends Controller
 
         return response()->json([
             'id' => $rental->id,
-            'gadget_name' => $rental->gadget?->name,
+            'gadget_name' => $rental->itemName(),
+            'item_name' => $rental->itemName(),
             'customer_name' => $rental->user?->name,
             'status' => $rental->status,
             'handed_over_at' => $rental->handed_over_at?->toIso8601String(),
@@ -272,16 +293,18 @@ class RentalController extends Controller
         }
 
         DB::transaction(function () use ($rental) {
-            $gadget = Gadget::query()
-                ->whereKey($rental->gadget_id)
-                ->lockForUpdate()
-                ->firstOrFail();
+            if (! $rental->isBundle()) {
+                $gadget = Gadget::query()
+                    ->whereKey($rental->gadget_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            if ($gadget->quantity < 1) {
-                abort(422, 'Cannot approve this request because the gadget is out of stock.');
+                if ($gadget->quantity < 1) {
+                    abort(422, 'Cannot approve this request because the gadget is out of stock.');
+                }
+
+                $gadget->decrement('quantity');
             }
-
-            $gadget->decrement('quantity');
 
             $rental->update([
                 'status' => 'approved',
@@ -290,7 +313,7 @@ class RentalController extends Controller
             ]);
         });
 
-        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new RentalApproved($rental));
 
         return back()->with('success', 'Rental request approved.');
@@ -306,7 +329,7 @@ class RentalController extends Controller
 
         $rental->update(['status' => 'rejected']);
 
-        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new RentalRejected($rental));
 
         return back()->with('success', 'Rental request rejected.');
@@ -362,8 +385,11 @@ class RentalController extends Controller
         $depositStatus = 'refunded';
         $depositRefundAmount = $depositAmount;
         $daysOverdue = $rental->daysOverdue();
+        $lateFeeRate = (float) ($rental->isBundle()
+            ? ($rental->bundle?->late_fee_per_day ?? 0)
+            : ($rental->gadget?->late_fee_per_day ?? 0));
         $lateFeeAmount = $daysOverdue > 0
-            ? $daysOverdue * (float) ($rental->gadget?->late_fee_per_day ?? 0)
+            ? $daysOverdue * $lateFeeRate
             : 0;
         $lateFeeWaived = $request->boolean('waive_late_fee');
 
@@ -382,12 +408,14 @@ class RentalController extends Controller
         }
 
         DB::transaction(function () use ($rental, $validated, $depositStatus, $depositRefundAmount, $lateFeeAmount, $lateFeeWaived) {
-            $gadget = Gadget::query()
-                ->whereKey($rental->gadget_id)
-                ->lockForUpdate()
-                ->firstOrFail();
+            if (! $rental->isBundle()) {
+                $gadget = Gadget::query()
+                    ->whereKey($rental->gadget_id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            $gadget->increment('quantity');
+                $gadget->increment('quantity');
+            }
 
             $rental->update([
                 'status' => 'completed',
@@ -402,7 +430,7 @@ class RentalController extends Controller
             ]);
         });
 
-        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new RentalCompleted($rental));
 
         return back()->with('success', 'Rental marked as returned successfully.');
@@ -426,7 +454,7 @@ class RentalController extends Controller
             'shipping_status' => 'waiting_for_shipping',
         ]);
 
-        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new PaymentVerified($rental));
 
         return back()->with('success', 'Payment verified successfully.');
@@ -449,7 +477,7 @@ class RentalController extends Controller
             'payment_status' => 'rejected',
         ]);
 
-        $rental->refresh()->loadMissing(['user', 'gadget']);
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new PaymentRejected($rental));
 
         return back()->with('success', 'Payment rejected successfully.');
@@ -468,6 +496,21 @@ class RentalController extends Controller
         $rentalDays = $startDate->diffInDays($endDate) + 1;
 
         return (float) $rentalDays * (float) $gadget->daily_rental_price;
+    }
+
+    private function calculateBundleTotalAmount(Bundle $bundle, array $validated): float
+    {
+        if ($validated['rental_type'] === 'hour') {
+            $hourlyPrice = $bundle->hourly_rental_price ?? $bundle->daily_rental_price ?? 0;
+
+            return (float) $validated['rental_hours'] * (float) $hourlyPrice;
+        }
+
+        $startDate = Carbon::parse($validated['start_date']);
+        $endDate = Carbon::parse($validated['end_date']);
+        $rentalDays = $startDate->diffInDays($endDate) + 1;
+
+        return (float) $rentalDays * (float) ($bundle->daily_rental_price ?? 0);
     }
 
     private function resolveRentalDates(array $validated): array

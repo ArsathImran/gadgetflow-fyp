@@ -16,7 +16,7 @@ class DashboardController extends Controller
 
         if ($user->isAdmin()) {
             $activeRentals = Rental::query()
-                ->with('gadget')
+                ->with(['gadget', 'bundle'])
                 ->where('status', 'approved')
                 ->whereNull('returned_at')
                 ->get();
@@ -75,7 +75,7 @@ class DashboardController extends Controller
         }
 
         $activeRentals = Rental::query()
-            ->with('gadget')
+            ->with(['gadget', 'bundle'])
             ->where('user_id', $user->id)
             ->where('status', 'approved')
             ->whereNull('returned_at')
@@ -84,7 +84,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             'activeRentalsCount' => $activeRentals->count(),
             'upcomingDueDates' => Rental::query()
-                ->with('gadget')
+                ->with(['gadget', 'bundle'])
                 ->where('user_id', $user->id)
                 ->where('status', 'approved')
                 ->whereNull('returned_at')

@@ -28,7 +28,7 @@ class ReportController extends Controller
                 'Rental ID',
                 'Customer Name',
                 'Customer Email',
-                'Gadget Name',
+                'Rental Item',
                 'Rental Type',
                 'Start Date',
                 'End Date',
@@ -42,7 +42,7 @@ class ReportController extends Controller
             ]);
 
             Rental::query()
-                ->with(['user', 'gadget'])
+                ->with(['user', 'gadget', 'bundle'])
                 ->when(! empty($validated['from']), function ($query) use ($validated) {
                     $query->whereDate('created_at', '>=', $validated['from']);
                 })
@@ -59,7 +59,7 @@ class ReportController extends Controller
                             $rental->id,
                             $rental->user?->name ?? '-',
                             $rental->user?->email ?? '-',
-                            $rental->gadget?->name ?? '-',
+                            $rental->itemName(),
                             $rental->rental_type,
                             $rental->start_date,
                             $rental->end_date,

@@ -28,6 +28,12 @@ class ReviewController extends Controller
                 ->with('error', 'You have already submitted a review for this rental.');
         }
 
+        if ($rental->isBundle()) {
+            return redirect()
+                ->route('customer.rentals.index')
+                ->with('error', 'Reviews are only available for gadget rentals right now.');
+        }
+
         $validated = $request->validate([
             'rating' => ['required', 'integer', 'between:1,5'],
             'comment' => ['nullable', 'string', 'max:1000'],
@@ -37,6 +43,7 @@ class ReviewController extends Controller
             'rental_id' => $rental->id,
             'user_id' => auth()->id(),
             'gadget_id' => $rental->gadget_id,
+            'bundle_id' => $rental->bundle_id,
             'rating' => $validated['rating'],
             'comment' => $validated['comment'] ?? null,
         ]);

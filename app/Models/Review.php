@@ -14,6 +14,7 @@ class Review extends Model
         'rental_id',
         'user_id',
         'gadget_id',
+        'bundle_id',
         'rating',
         'comment',
     ];
@@ -31,5 +32,10 @@ class Review extends Model
     public function gadget(): BelongsTo
     {
         return $this->belongsTo(Gadget::class);
+    }
+
+    public function bundle(): BelongsTo
+    {
+        return $this->belongsTo(Bundle::class);
     }
 }

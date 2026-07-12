@@ -22,7 +22,7 @@ class PaymentVerified extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $gadgetName = $this->rental->gadget?->name ?? 'your selected gadget';
+        $gadgetName = $this->rental->itemName();
 
         return (new MailMessage)
             ->subject('Payment Confirmed')

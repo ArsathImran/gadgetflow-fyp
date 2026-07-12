@@ -5,7 +5,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Upload Payment Proof') }}
                 </h2>
-                <p class="text-sm text-gray-600">Complete payment for {{ $rental->gadget?->name ?? 'your rental' }}.</p>
+                <p class="text-sm text-gray-600">Complete payment for {{ $rental->itemName() }}.</p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -40,7 +40,7 @@
                     <div class="mt-6">
                         <p class="text-sm font-medium text-gray-700">Rental Summary</p>
                         <div class="mt-3 grid gap-3 rounded-2xl border border-gray-200 p-4 text-sm text-gray-700">
-                            <p><span class="font-semibold text-gray-900">Gadget:</span> {{ $rental->gadget?->name ?? '-' }}</p>
+                            <p><span class="font-semibold text-gray-900">Rental Item:</span> {{ $rental->itemName() }}</p>
                             <p><span class="font-semibold text-gray-900">Total Amount:</span> {{ number_format($rental->total_amount, 2) }}</p>
                             <p><span class="font-semibold text-gray-900">Payment Status:</span> {{ ucwords(str_replace('_', ' ', $rental->payment_status)) }}</p>
                         </div>

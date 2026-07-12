@@ -55,7 +55,7 @@
                                     <dd id="result-rental-id" class="text-right font-semibold text-gray-900"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Gadget</dt>
+                                    <dt class="font-medium text-gray-500">Rental Item</dt>
                                     <dd id="result-gadget-name" class="text-right font-semibold text-gray-900"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">

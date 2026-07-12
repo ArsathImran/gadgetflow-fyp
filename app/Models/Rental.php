@@ -15,6 +15,7 @@ class Rental extends Model
     protected $fillable = [
         'user_id',
         'gadget_id',
+        'bundle_id',
         'qr_token',
         'rental_type',
         'rental_hours',
@@ -96,6 +97,11 @@ class Rental extends Model
         return $this->belongsTo(Gadget::class);
     }
 
+    public function bundle(): BelongsTo
+    {
+        return $this->belongsTo(Bundle::class);
+    }
+
     public function collectedByAdmin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'payment_collected_by');
@@ -104,5 +110,17 @@ class Rental extends Model
     public function review(): HasOne
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function itemName(): string
+    {
+        return $this->gadget?->name
+            ?? $this->bundle?->name
+            ?? 'Unknown Rental Item';
+    }
+
+    public function isBundle(): bool
+    {
+        return $this->bundle_id !== null;
     }
 }

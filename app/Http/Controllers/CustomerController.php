@@ -37,7 +37,7 @@ class CustomerController extends Controller
         abort_unless($user->isCustomer(), 404);
 
         $rentals = $user->rentals()
-            ->with('gadget')
+            ->with(['gadget', 'bundle'])
             ->latest()
             ->paginate(10);
 

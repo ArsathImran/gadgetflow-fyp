@@ -12,7 +12,7 @@
             <p class="text-sm font-semibold uppercase tracking-[0.35em] text-sky-300">Pickup / Return Verification</p>
 
             <h1 class="mt-4 text-3xl font-semibold text-white sm:text-4xl">
-                {{ $rental->gadget?->name ?? 'Rental Gadget' }}
+                {{ $rental->itemName() }}
             </h1>
 
             <p class="mt-3 text-base text-slate-300">
