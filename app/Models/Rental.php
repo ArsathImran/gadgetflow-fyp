@@ -15,6 +15,7 @@ class Rental extends Model
     protected $fillable = [
         'user_id',
         'gadget_id',
+        'qr_token',
         'rental_type',
         'rental_hours',
         'pickup_type',
@@ -42,6 +43,7 @@ class Rental extends Model
         'late_fee_waived',
         'payment_collected_at',
         'payment_collected_by',
+        'handed_over_at',
     ];
 
     protected function casts(): array
@@ -55,6 +57,7 @@ class Rental extends Model
             'late_fee_amount' => 'decimal:2',
             'late_fee_waived' => 'boolean',
             'payment_collected_at' => 'datetime',
+            'handed_over_at' => 'datetime',
         ];
     }
 

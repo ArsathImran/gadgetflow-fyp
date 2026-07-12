@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class RentalController extends Controller
 {
@@ -64,10 +66,12 @@ class RentalController extends Controller
         $totalAmount = $this->calculateTotalAmount($gadget, $validated);
 
         $rentalDates = $this->resolveRentalDates($validated);
+        $qrToken = $this->generateUniqueQrToken();
 
         Rental::create([
             'user_id' => auth()->id(),
             'gadget_id' => $gadget->id,
+            'qr_token' => $qrToken,
             'rental_type' => $validated['rental_type'],
             'rental_hours' => $validated['rental_type'] === 'hour' ? (int) $validated['rental_hours'] : null,
             'pickup_type' => $validated['pickup_type'],
@@ -90,6 +94,22 @@ class RentalController extends Controller
         return redirect()
             ->route('customer.rentals.index')
             ->with('success', 'Rental request submitted successfully.');
+    }
+
+    public function showQr(Rental $rental)
+    {
+        abort_unless(auth()->check(), 403);
+        abort_unless(auth()->user()->isCustomer(), 403);
+        abort_unless($rental->user_id === auth()->id(), 403);
+        abort_unless($rental->status === 'approved', 403);
+        abort_unless(! empty($rental->qr_token), 403);
+
+        $rental->load('gadget');
+
+        $scanUrl = url('/admin/rentals/scan') . '?token=' . urlencode($rental->qr_token);
+        $qrSvg = QrCode::size(300)->generate($scanUrl);
+
+        return view('customer.rentals.qr', compact('rental', 'qrSvg'));
     }
 
     public function paymentCreate(Rental $rental)
@@ -401,5 +421,14 @@ class RentalController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
         ];
+    }
+
+    private function generateUniqueQrToken(): string
+    {
+        do {
+            $token = Str::random(40);
+        } while (Rental::query()->where('qr_token', $token)->exists());
+
+        return $token;
     }
 }

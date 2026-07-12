@@ -202,6 +202,17 @@
                                                         </a>
                                                     @endif
 
+                                                    @if ($rental->status === 'approved' && ! empty($rental->qr_token))
+                                                        <a
+                                                            href="{{ route('customer.rentals.qr', $rental) }}"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            class="inline-flex items-center rounded-md border border-sky-300 bg-sky-50 px-3 py-2 text-sky-700 transition hover:bg-sky-100"
+                                                        >
+                                                            Show Pickup/Return QR
+                                                        </a>
+                                                    @endif
+
                                                     @if ($rental->status === 'pending')
                                                         <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" onsubmit="return confirm('Are you sure you want to cancel this rental request?');">
                                                             @csrf
