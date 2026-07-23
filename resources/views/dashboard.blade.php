@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-col gap-2">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            <h2 class="font-display text-xl font-semibold text-ink leading-tight">
                 {{ auth()->user()->isAdmin() ? __('Admin Dashboard') : __('My Dashboard') }}
             </h2>
-            <p class="text-sm text-gray-600">
+            <p class="font-body text-sm text-slate">
                 {{ auth()->user()->isAdmin() ? 'Track rentals, inventory, and revenue at a glance.' : 'Stay on top of your rentals, due dates, and spending.' }}
             </p>
         </div>
@@ -198,16 +198,16 @@
             @else
                 <div class="grid gap-6 md:grid-cols-3">
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <p class="text-sm font-medium text-slate-500">Active Rentals</p>
-                        <p class="mt-4 text-4xl font-semibold text-slate-950">{{ $activeRentalsCount }}</p>
+                        <p class="font-body text-sm font-medium text-slate">Active Rentals</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $activeRentalsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-orange-200 bg-orange-50 p-6 shadow-[0_18px_40px_rgba(249,115,22,0.10)]">
-                        <p class="text-sm font-medium text-orange-700">Overdue Rentals</p>
-                        <p class="mt-4 text-4xl font-semibold text-orange-900">{{ $overdueRentalsCount }}</p>
+                    <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(251,191,36,0.12)]">
+                        <p class="font-body text-sm font-medium text-amber-700">Overdue Rentals</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-amber-900">{{ $overdueRentalsCount }}</p>
                     </div>
                     <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)]">
-                        <p class="text-sm font-medium text-emerald-700">Total Spent</p>
-                        <p class="mt-4 text-4xl font-semibold text-emerald-900">{{ number_format((float) $totalSpent, 2) }}</p>
+                        <p class="font-body text-sm font-medium text-emerald-700">Total Spent</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-emerald-900">{{ number_format((float) $totalSpent, 2) }}</p>
                     </div>
                 </div>
 
@@ -215,34 +215,34 @@
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-lg font-semibold text-slate-950">Upcoming Due Dates</h3>
-                                <p class="mt-1 text-sm text-slate-500">Your next rentals that need attention.</p>
+                                <h3 class="font-display text-lg font-semibold text-ink">Upcoming Due Dates</h3>
+                                <p class="mt-1 font-body text-sm text-slate">Your next rentals that need attention.</p>
                             </div>
                         </div>
                         <div class="mt-6 space-y-4">
                             @forelse ($upcomingDueDates as $rental)
-                                <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-cloud px-4 py-4">
                                     <div>
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <p class="font-semibold text-slate-900">{{ $rental->itemName() }}</p>
-                                            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                            <p class="font-display font-semibold text-ink">{{ $rental->itemName() }}</p>
+                                            <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
                                                 {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
                                             </span>
                                         </div>
-                                        <p class="mt-1 text-sm text-slate-500">Due on {{ $rental->end_date }}</p>
+                                        <p class="mt-1 font-body text-sm text-slate">Due on {{ $rental->end_date }}</p>
                                     </div>
                                     @if ($rental->isOverdue())
-                                        <span class="inline-flex rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-700">
+                                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 font-body text-sm font-semibold text-amber-700">
                                             {{ $rental->daysOverdue() }} day{{ $rental->daysOverdue() === 1 ? '' : 's' }} overdue
                                         </span>
                                     @else
-                                        <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
+                                        <span class="inline-flex rounded-full bg-blue-100 px-3 py-1 font-body text-sm font-semibold text-blue-700">
                                             Active
                                         </span>
                                     @endif
                                 </div>
                             @empty
-                                <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-8 text-sm text-slate-500">
+                                <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-8 font-body text-sm text-slate">
                                     No active rentals with upcoming due dates right now.
                                 </p>
                             @endforelse
@@ -250,13 +250,13 @@
                     </div>
 
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <h3 class="text-lg font-semibold text-slate-950">Quick Actions</h3>
-                        <p class="mt-1 text-sm text-slate-500">Jump straight to the pages you use most.</p>
+                        <h3 class="font-display text-lg font-semibold text-ink">Quick Actions</h3>
+                        <p class="mt-1 font-body text-sm text-slate">Jump straight to the pages you use most.</p>
                         <div class="mt-6 flex flex-col gap-3">
-                            <a href="{{ route('customer.gadgets.index') }}" class="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+                            <a href="{{ route('customer.gadgets.index') }}" class="inline-flex items-center justify-center rounded-xl bg-ink px-4 py-3 text-sm font-body font-semibold text-white transition hover:bg-slate-900">
                                 Browse Gadgets
                             </a>
-                            <a href="{{ route('customer.rentals.index') }}" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
+                            <a href="{{ route('customer.rentals.index') }}" class="inline-flex items-center justify-center rounded-xl bg-indigo px-4 py-3 text-sm font-body font-semibold text-white transition hover:bg-indigo-500">
                                 View My Rentals
                             </a>
                         </div>
