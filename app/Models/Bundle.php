@@ -18,6 +18,11 @@ class Bundle extends Model
         'deposit_amount',
         'late_fee_per_day',
         'image',
+        'gallery_images',
         'status',
+    ];
+
+    protected $casts = [
+        'gallery_images' => 'array',
     ];
 }
