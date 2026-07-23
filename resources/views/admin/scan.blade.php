@@ -91,14 +91,80 @@
                                     Confirm Handover
                                 </button>
 
-                                <a id="proceed-to-return-link" href="#" class="hidden rounded-md border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
-                                    Proceed to Return
-                                </a>
-
                                 <button id="scan-again-button" type="button" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
                                     Clear Result
                                 </button>
                             </div>
+                        </div>
+
+                        <div id="return-form-panel" class="hidden rounded-2xl border border-blue-200 bg-blue-50 p-5">
+                            <form id="return-form" x-data="{ depositDecision: 'full_refund' }" class="space-y-4">
+                                <input type="hidden" name="_method" value="PATCH">
+
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-800">Inline Return</p>
+                                    <p class="mt-1 text-sm text-blue-900">Complete the return workflow directly from the scanner result panel.</p>
+                                </div>
+
+                                <div class="grid gap-4 sm:grid-cols-2">
+                                    <div>
+                                        <label for="scan-condition-on-return" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                            Condition on Return
+                                        </label>
+                                        <select id="scan-condition-on-return" name="condition_on_return" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                            <option value="good">Good</option>
+                                            <option value="damaged">Damaged</option>
+                                            <option value="missing_parts">Missing Parts</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label for="scan-deposit-decision" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                            Deposit Decision
+                                        </label>
+                                        <select id="scan-deposit-decision" name="deposit_decision" x-model="depositDecision" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                            <option value="full_refund">Full Refund</option>
+                                            <option value="partial_refund">Partial Refund</option>
+                                            <option value="deduct_all">Deduct All</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="scan-return-notes" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        Return Notes
+                                    </label>
+                                    <textarea id="scan-return-notes" name="return_notes" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Optional notes about the returned item."></textarea>
+                                </div>
+
+                                <div x-show="depositDecision === 'partial_refund'">
+                                    <label for="scan-deposit-refund-amount" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        Deposit Refund Amount
+                                    </label>
+                                    <input id="scan-deposit-refund-amount" type="number" name="deposit_refund_amount" min="0" step="0.01" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400">
+                                </div>
+
+                                <div x-show="depositDecision === 'partial_refund' || depositDecision === 'deduct_all'">
+                                    <label for="scan-deposit-deduction-reason" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        Deduction Reason
+                                    </label>
+                                    <textarea id="scan-deposit-deduction-reason" name="deposit_deduction_reason" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Required when the deposit is not fully refunded."></textarea>
+                                </div>
+
+                                <div id="return-late-fee-box" class="hidden rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                                    <p id="return-late-fee-text"></p>
+                                    <label class="mt-3 inline-flex items-center gap-2 text-sm text-blue-900">
+                                        <input id="scan-waive-late-fee" type="checkbox" name="waive_late_fee" value="1" class="rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                                        <span>Waive late fee</span>
+                                    </label>
+                                </div>
+
+                                <div class="flex flex-wrap gap-3">
+                                    <button id="confirm-return-button" type="submit" class="rounded-md border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                        Confirm Return
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -111,7 +177,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const lookupUrl = @json(route('admin.scan.lookup'));
             const handoverUrlTemplate = @json(route('admin.scan.confirm-handover', ['rental' => '__RENTAL__']));
-            const rentalsIndexUrl = @json(route('admin.rentals.index'));
+            const returnUrlTemplate = @json(route('admin.rentals.return', ['rental' => '__RENTAL__']));
             const csrfToken = @json(csrf_token());
             const qrTokenParam = 'token';
 
@@ -129,8 +195,14 @@
             const resultReturnedAt = document.getElementById('result-returned-at');
             const actionText = document.getElementById('action-text');
             const confirmHandoverButton = document.getElementById('confirm-handover-button');
-            const proceedToReturnLink = document.getElementById('proceed-to-return-link');
             const scanAgainButton = document.getElementById('scan-again-button');
+            const returnFormPanel = document.getElementById('return-form-panel');
+            const returnForm = document.getElementById('return-form');
+            const returnLateFeeBox = document.getElementById('return-late-fee-box');
+            const returnLateFeeText = document.getElementById('return-late-fee-text');
+            const depositRefundAmountInput = document.getElementById('scan-deposit-refund-amount');
+            const waiveLateFeeInput = document.getElementById('scan-waive-late-fee');
+            const confirmReturnButton = document.getElementById('confirm-return-button');
 
             let isProcessing = false;
             let activeRental = null;
@@ -207,12 +279,25 @@
                 return status.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
             }
 
+            function humanizeDepositStatus(status) {
+                return status.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+            }
+
+            function resetReturnForm() {
+                returnForm.reset();
+                depositRefundAmountInput.value = '';
+                waiveLateFeeInput.checked = false;
+                depositRefundAmountInput.removeAttribute('max');
+                returnLateFeeBox.classList.add('hidden');
+                returnLateFeeText.textContent = '';
+            }
+
             function resetResultPanel() {
                 activeRental = null;
                 clearMessage();
+                resetReturnForm();
                 confirmHandoverButton.classList.add('hidden');
-                proceedToReturnLink.classList.add('hidden');
-                proceedToReturnLink.removeAttribute('href');
+                returnFormPanel.classList.add('hidden');
                 actionText.textContent = '';
                 resultPanel.classList.add('hidden');
                 resultEmpty.classList.remove('hidden');
@@ -224,6 +309,17 @@
                     resetResultPanel();
                     updateScannerState('Scanning...', 'Waiting for a QR code.', 'sky');
                 }, delay);
+            }
+
+            function configureReturnForm(data) {
+                resetReturnForm();
+                depositRefundAmountInput.value = data.deposit_amount ?? 0;
+                depositRefundAmountInput.max = data.deposit_amount ?? 0;
+
+                if ((data.days_overdue ?? 0) > 0 && (data.late_fee_amount ?? 0) > 0) {
+                    returnLateFeeText.textContent = `Late fee: ${Number(data.late_fee_amount).toFixed(2)} for ${data.days_overdue} day${data.days_overdue === 1 ? '' : 's'} overdue`;
+                    returnLateFeeBox.classList.remove('hidden');
+                }
             }
 
             function renderResult(data) {
@@ -240,15 +336,15 @@
                 resultReturnedAt.textContent = formatTimestamp(data.returned_at);
 
                 confirmHandoverButton.classList.add('hidden');
-                proceedToReturnLink.classList.add('hidden');
+                returnFormPanel.classList.add('hidden');
 
                 if (data.next_action === 'handover') {
                     actionText.textContent = 'This rental is approved and ready for physical handover.';
                     confirmHandoverButton.classList.remove('hidden');
                 } else if (data.next_action === 'return') {
-                    actionText.textContent = 'This rental has already been handed over. Jump to the return form to complete the return workflow.';
-                    proceedToReturnLink.href = `${rentalsIndexUrl}#rental-${data.id}`;
-                    proceedToReturnLink.classList.remove('hidden');
+                    actionText.textContent = 'This rental has already been handed over. Complete the return workflow below.';
+                    configureReturnForm(data);
+                    returnFormPanel.classList.remove('hidden');
                 } else if (data.next_action === 'already_completed') {
                     actionText.textContent = 'This rental has already been completed.';
                 } else {
@@ -363,7 +459,62 @@
                 }
             }
 
+            async function submitReturn(event) {
+                event.preventDefault();
+
+                if (!activeRental) {
+                    return;
+                }
+
+                confirmReturnButton.disabled = true;
+                confirmReturnButton.textContent = 'Confirming...';
+                updateScannerState('Processing...', `Confirming return for rental #${activeRental.id}.`, 'amber');
+
+                try {
+                    const formData = new FormData(returnForm);
+
+                    const response = await fetch(returnUrlTemplate.replace('__RENTAL__', activeRental.id), {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: formData,
+                    });
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (!response.ok) {
+                        const validationMessage = data.errors
+                            ? Object.values(data.errors).flat()[0]
+                            : null;
+
+                        throw new Error(validationMessage || data.message || 'Unable to confirm return.');
+                    }
+
+                    const lateFeeSummary = data.late_fee_waived
+                        ? 'late fee waived'
+                        : ((data.late_fee_amount ?? 0) > 0 ? `late fee applied (${Number(data.late_fee_amount).toFixed(2)})` : 'no late fee');
+                    const successMessage = `Return confirmed - ${humanizeDepositStatus(data.deposit_status)} (${Number(data.deposit_refund_amount ?? 0).toFixed(2)}) and ${lateFeeSummary}.`;
+
+                    activeRental.returned_at = data.returned_at;
+                    activeRental.status = 'completed';
+                    activeRental.next_action = 'already_completed';
+                    renderResult(activeRental);
+                    showMessage(successMessage, 'green');
+                    updateScannerState('Confirmed', `Return confirmed for rental #${activeRental.id}. Returning to scan mode shortly.`, 'green');
+                    scheduleReset();
+                } catch (error) {
+                    showMessage(error.message, 'red');
+                    updateScannerState('Action Failed', error.message, 'red');
+                } finally {
+                    confirmReturnButton.disabled = false;
+                    confirmReturnButton.textContent = 'Confirm Return';
+                }
+            }
+
             confirmHandoverButton.addEventListener('click', confirmHandover);
+            returnForm.addEventListener('submit', submitReturn);
             scanAgainButton.addEventListener('click', () => {
                 window.clearTimeout(resetTimer);
                 resetResultPanel();

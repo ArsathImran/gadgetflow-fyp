@@ -90,44 +90,11 @@
                                                     @else bg-gray-100 text-gray-800 @endif">
                                                     {{ $paymentLabel }}
                                                 </span>
-                                                @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'collected' && $rental->payment_collected_at)
-                                                    <div class="mt-2 text-xs text-gray-500">
-                                                        Collected on {{ $rental->payment_collected_at->format('Y-m-d H:i') }}
-                                                    </div>
-                                                    <div class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
-                                                        <p class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Payment Receipt</p>
-                                                        <div class="mt-3 space-y-2 text-xs text-emerald-900">
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Rental Item</span>
-                                                                <span class="text-right font-semibold">{{ $rental->itemName() }}</span>
-                                                            </div>
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Rental Period</span>
-                                                                <span class="text-right font-semibold">
-                                                                    @if ($rental->rental_type === 'hour')
-                                                                        {{ $rental->rental_hours }} hour(s)
-                                                                    @else
-                                                                        {{ $rental->start_date }} to {{ $rental->end_date }}
-                                                                    @endif
-                                                                </span>
-                                                            </div>
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Total Amount</span>
-                                                                <span class="font-semibold">{{ number_format($rental->total_amount, 2) }}</span>
-                                                            </div>
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Deposit Amount</span>
-                                                                <span class="font-semibold">{{ number_format((float) ($rental->deposit_amount ?? 0), 2) }}</span>
-                                                            </div>
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Payment Method</span>
-                                                                <span class="font-semibold">Walk-in / Cash</span>
-                                                            </div>
-                                                            <div class="flex items-center justify-between gap-4">
-                                                                <span class="text-emerald-700">Collected Date</span>
-                                                                <span class="font-semibold">{{ $rental->payment_collected_at->format('Y-m-d H:i') }}</span>
-                                                            </div>
-                                                        </div>
+                                                @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                    <div class="mt-3">
+                                                        <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500">
+                                                            Pay Now
+                                                        </a>
                                                     </div>
                                                 @endif
                                             </td>
@@ -148,25 +115,6 @@
                                                         {{ ucwords(str_replace('_', ' ', $rental->deposit_status ?? 'held')) }}
                                                     </span>
                                                 </div>
-                                                @if (!is_null($rental->deposit_refund_amount))
-                                                    <div class="mt-2 text-xs text-gray-500">
-                                                        Refunded: {{ number_format((float) $rental->deposit_refund_amount, 2) }}
-                                                    </div>
-                                                @endif
-                                                @if ($rental->deposit_deduction_reason)
-                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-xs text-gray-500">
-                                                        Reason: {{ $rental->deposit_deduction_reason }}
-                                                    </div>
-                                                @endif
-                                                @if ($rental->late_fee_waived)
-                                                    <div class="mt-2 text-xs font-semibold text-green-700">
-                                                        Late Fee: Waived
-                                                    </div>
-                                                @elseif ((float) ($rental->late_fee_amount ?? 0) > 0)
-                                                    <div class="mt-2 text-xs text-gray-500">
-                                                        Late Fee: {{ number_format((float) $rental->late_fee_amount, 2) }}
-                                                    </div>
-                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
@@ -183,6 +131,15 @@
                                                         }
                                                     }}
                                                 </span>
+                                                @if ($rental->status === 'pending')
+                                                    <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" class="mt-3" onsubmit="return confirm('Are you sure you want to cancel this rental request?');">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="inline-flex items-center rounded-md border border-red-300 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50">
+                                                            Cancel Request
+                                                        </button>
+                                                    </form>
+                                                @endif
                                                 @if ($rental->isOverdue())
                                                     <div class="mt-2">
                                                         <span class="inline-flex rounded-full bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-800">
@@ -202,86 +159,9 @@
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                <div class="ml-auto flex max-w-sm flex-col items-end gap-3">
-                                                    @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
-                                                        <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500">
-                                                            Pay Now
-                                                        </a>
-                                                    @endif
-
-                                                    @if ($rental->status === 'approved' && ! empty($rental->qr_token))
-                                                        <a
-                                                            href="{{ route('customer.rentals.qr', $rental) }}"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            class="inline-flex items-center rounded-md border border-sky-300 bg-sky-50 px-3 py-2 text-sky-700 transition hover:bg-sky-100"
-                                                        >
-                                                            Show Pickup/Return QR
-                                                        </a>
-                                                    @endif
-
-                                                    @if ($rental->status === 'pending')
-                                                        <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" onsubmit="return confirm('Are you sure you want to cancel this rental request?');">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" class="inline-flex items-center rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
-                                                                Cancel Request
-                                                            </button>
-                                                        </form>
-                                                    @endif
-
-                                                    @if ($rental->status === 'completed' && ! $rental->isBundle())
-                                                        @if ($rental->review)
-                                                            <div class="w-full rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left">
-                                                                <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">Your Review</p>
-                                                                <div class="mt-2 flex items-center gap-2">
-                                                                    <span class="text-sm font-semibold text-amber-900">
-                                                                        @for ($star = 1; $star <= 5; $star++)
-                                                                            <span class="{{ $star <= $rental->review->rating ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
-                                                                        @endfor
-                                                                    </span>
-                                                                    <span class="text-xs text-amber-800">{{ $rental->review->rating }}/5</span>
-                                                                </div>
-                                                                <p class="mt-3 whitespace-pre-line text-sm text-amber-900">
-                                                                    {{ $rental->review->comment ?: 'No written comment provided.' }}
-                                                                </p>
-                                                            </div>
-                                                        @else
-                                                            <form method="POST" action="{{ route('customer.rentals.review.store', $rental) }}" class="w-full rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-left">
-                                                                @csrf
-                                                                <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Leave a Review</p>
-                                                                <div class="mt-3">
-                                                                    <label for="rating-{{ $rental->id }}" class="block text-xs font-medium text-indigo-900">Rating</label>
-                                                                    <select id="rating-{{ $rental->id }}" name="rating" class="mt-1 block w-full rounded-md border-indigo-200 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-400" required>
-                                                                        <option value="">Select a rating</option>
-                                                                        @for ($rating = 5; $rating >= 1; $rating--)
-                                                                            <option value="{{ $rating }}" @selected((string) old('rating') === (string) $rating)>
-                                                                                {{ $rating }} star{{ $rating === 1 ? '' : 's' }}
-                                                                            </option>
-                                                                        @endfor
-                                                                    </select>
-                                                                    <x-input-error class="mt-2" :messages="$errors->get('rating')" />
-                                                                </div>
-                                                                <div class="mt-3">
-                                                                    <label for="comment-{{ $rental->id }}" class="block text-xs font-medium text-indigo-900">Comment</label>
-                                                                    <textarea id="comment-{{ $rental->id }}" name="comment" rows="3" class="mt-1 block w-full rounded-md border-indigo-200 text-sm text-gray-700 shadow-sm focus:border-indigo-400 focus:ring-indigo-400" maxlength="1000" placeholder="Share a few thoughts about the gadget and rental experience.">{{ old('comment') }}</textarea>
-                                                                    <x-input-error class="mt-2" :messages="$errors->get('comment')" />
-                                                                </div>
-                                                                <button type="submit" class="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500">
-                                                                    Submit Review
-                                                                </button>
-                                                            </form>
-                                                        @endif
-                                                    @endif
-
-                                                    @if (
-                                                        $rental->status !== 'pending'
-                                                        && ! ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
-                                                        && ! ($rental->status === 'completed' && ! $rental->isBundle())
-                                                    )
-                                                        <span class="text-gray-400">-</span>
-                                                    @endif
-                                                </div>
+                                                <a href="{{ route('customer.rentals.show', $rental) }}" class="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+                                                    View
+                                                </a>
                                             </td>
                                         </tr>
                                     @endforeach

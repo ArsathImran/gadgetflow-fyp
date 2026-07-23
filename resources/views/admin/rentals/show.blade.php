@@ -1,0 +1,284 @@
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                    {{ __('Rental Details') }}
+                </h2>
+                <p class="text-sm text-gray-600">Review payment proof, return workflow, and customer feedback for this rental.</p>
+            </div>
+
+            <a href="{{ route('admin.rentals.index') }}" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                Back to Rental Requests
+            </a>
+        </div>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="space-y-6">
+                @if (session('success'))
+                    <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                        {{ session('success') }}
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {{ session('error') }}
+                    </div>
+                @endif
+
+                @php
+                    $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
+                        ? 'Pending Collection'
+                        : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
+                            ? 'Collected'
+                            : ucwords(str_replace('_', ' ', $rental->payment_status)));
+                    $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
+                    $daysOverdue = $rental->daysOverdue();
+                    $calculatedLateFee = $daysOverdue * (float) ($rental->isBundle()
+                        ? ($rental->bundle?->late_fee_per_day ?? 0)
+                        : ($rental->gadget?->late_fee_per_day ?? 0));
+                @endphp
+
+                <div class="bg-white shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-gray-900">
+                        <div class="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-2xl font-semibold text-gray-900">{{ $rental->itemName() }}</h3>
+                                    <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                        {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-sm text-gray-500">
+                                    {{ $rental->isBundle() ? ($rental->bundle?->type === 'wedding' ? 'Wedding Combo' : 'Short Film Combo') : ($rental->gadget?->category?->name ?? '-') }}
+                                </p>
+                                <p class="mt-2 text-sm text-gray-500">Rental ID #{{ $rental->id }}</p>
+                                <p class="mt-1 text-sm text-gray-500">Customer: {{ $rental->user?->name ?? '-' }}</p>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                    @if ($rental->status === 'approved') bg-green-100 text-green-800
+                                    @elseif ($rental->status === 'rejected') bg-red-100 text-red-800
+                                    @elseif ($rental->status === 'cancelled_by_customer') bg-rose-100 text-rose-800
+                                    @elseif ($rental->status === 'returned' || $rental->status === 'completed') bg-blue-100 text-blue-800
+                                    @else bg-yellow-100 text-yellow-800 @endif">
+                                    {{
+                                        match ($rental->status) {
+                                            'completed' => 'Completed',
+                                            'cancelled_by_customer' => 'Cancelled by Customer',
+                                            default => ucfirst($rental->status),
+                                        }
+                                    }}
+                                </span>
+                                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold
+                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
+                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
+                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ $paymentLabel }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Pickup</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Rental</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ ucfirst($rental->rental_type) }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Dates / Hours</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">
+                                    @if ($rental->rental_type === 'hour')
+                                        {{ $rental->rental_hours }} hour(s)
+                                    @else
+                                        {{ $rental->start_date }} to {{ $rental->end_date }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ number_format($rental->total_amount, 2) }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Shipping</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Returned At</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">
+                                    {{ $rental->returned_at ? $rental->returned_at->format('Y-m-d H:i') : '-' }}
+                                </p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Phone</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ $rental->phone_number ?? '-' }}</p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">IC Number</p>
+                                <p class="mt-2 text-sm font-semibold text-gray-900">{{ $rental->ic_number ?? '-' }}</p>
+                            </div>
+                        </div>
+
+                        @if ($rental->pickup_type === 'delivery')
+                            <div class="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Delivery Address</p>
+                                <p class="mt-2 whitespace-pre-line text-sm text-gray-700">{{ $rental->delivery_address ?? '-' }}</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Payment Proofs</p>
+                            <p class="mt-1 text-sm text-gray-600">Uploaded files and payment note.</p>
+                        </div>
+                        <span class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
+                            {{ count($paymentProofs) }} file{{ count($paymentProofs) === 1 ? '' : 's' }}
+                        </span>
+                    </div>
+
+                    <div class="mt-4">
+                        @if (count($paymentProofs))
+                            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                @foreach ($paymentProofs as $proof)
+                                    @php
+                                        $extension = strtolower(pathinfo($proof, PATHINFO_EXTENSION));
+                                        $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], true);
+                                    @endphp
+                                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                                        @if ($isImage)
+                                            <a href="{{ asset('storage/' . $proof) }}" target="_blank" rel="noopener noreferrer" class="block">
+                                                <img src="{{ asset('storage/' . $proof) }}" alt="Payment proof {{ $loop->iteration }}" class="h-56 w-full object-cover">
+                                            </a>
+                                        @else
+                                            <div class="flex h-56 items-center justify-center px-4 text-center text-sm text-slate-500">
+                                                Preview unavailable for this file type.
+                                            </div>
+                                        @endif
+                                        <div class="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3">
+                                            <span class="text-sm font-medium text-slate-700">Proof {{ $loop->iteration }}</span>
+                                            <a href="{{ asset('storage/' . $proof) }}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+                                                Open file
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-sm text-slate-500">No payment proof uploaded.</p>
+                        @endif
+
+                        <div class="mt-4 rounded-xl bg-slate-50 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Payment Note</p>
+                            <p class="mt-2 whitespace-pre-line text-sm text-slate-700">{{ $rental->payment_note ?: 'No payment note provided.' }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'pending_collection')
+                    <section class="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Walk-in Payment</p>
+                        <p class="mt-2 text-sm text-indigo-900">Collect payment at pickup, then confirm it here.</p>
+                        <form method="POST" action="{{ route('admin.rentals.payment.collect', $rental) }}" class="mt-4">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="rounded-md border border-indigo-300 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100">
+                                Mark Payment Collected
+                            </button>
+                        </form>
+                    </section>
+                @endif
+
+                @if ($rental->status === 'approved')
+                    <section class="rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm" x-data="{ depositDecision: '{{ old('deposit_decision', 'full_refund') }}' }">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-blue-800">Return & Deposit</p>
+                        <p class="mt-2 text-sm text-blue-900">Complete the return workflow, deposit decision, and late fee handling.</p>
+                        <form method="POST" action="{{ route('admin.rentals.return', $rental) }}" class="mt-4">
+                            @csrf
+                            @method('PATCH')
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        Condition on Return
+                                    </label>
+                                    <select name="condition_on_return" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                        <option value="good">Good</option>
+                                        <option value="damaged">Damaged</option>
+                                        <option value="missing_parts">Missing Parts</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        Deposit Decision
+                                    </label>
+                                    <select name="deposit_decision" x-model="depositDecision" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                        <option value="full_refund">Full Refund</option>
+                                        <option value="partial_refund">Partial Refund</option>
+                                        <option value="deduct_all">Deduct All</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    Return Notes
+                                </label>
+                                <textarea name="return_notes" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Optional notes about the returned item.">{{ old('return_notes') }}</textarea>
+                            </div>
+                            <div class="mt-4" x-show="depositDecision === 'partial_refund'">
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    Deposit Refund Amount
+                                </label>
+                                <input type="number" name="deposit_refund_amount" min="0" max="{{ $rental->deposit_amount ?? 0 }}" step="0.01" value="{{ old('deposit_refund_amount', $rental->deposit_amount) }}" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400">
+                            </div>
+                            <div class="mt-4" x-show="depositDecision === 'partial_refund' || depositDecision === 'deduct_all'">
+                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    Deduction Reason
+                                </label>
+                                <textarea name="deposit_deduction_reason" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Required when the deposit is not fully refunded.">{{ old('deposit_deduction_reason') }}</textarea>
+                            </div>
+                            @if ($rental->isOverdue())
+                                <div class="mt-4 rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                                    Late fee: {{ number_format($calculatedLateFee, 2) }} for {{ $daysOverdue }} day{{ $daysOverdue === 1 ? '' : 's' }} overdue
+                                </div>
+                                <label class="mt-4 inline-flex items-center gap-2 text-sm text-blue-900">
+                                    <input type="checkbox" name="waive_late_fee" value="1" @checked(old('waive_late_fee')) class="rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                                    <span>Waive late fee</span>
+                                </label>
+                            @endif
+                            <button type="submit" class="mt-4 rounded-md border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                Mark as Returned
+                            </button>
+                        </form>
+                    </section>
+                @endif
+
+                @if ($rental->review)
+                    <section class="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-amber-700">Customer Review</p>
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="text-sm font-semibold text-amber-900">
+                                @for ($star = 1; $star <= 5; $star++)
+                                    <span class="{{ $star <= $rental->review->rating ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
+                                @endfor
+                            </span>
+                            <span class="text-xs text-amber-800">{{ $rental->review->rating }}/5</span>
+                        </div>
+                        <p class="mt-3 whitespace-pre-line text-sm text-amber-900">
+                            {{ $rental->review->comment ?: 'No written comment provided.' }}
+                        </p>
+                    </section>
+                @endif
+            </div>
+        </div>
+    </div>
+</x-app-layout>

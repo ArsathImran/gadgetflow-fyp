@@ -212,11 +212,31 @@ class RentalController extends Controller
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
 
         $rentals = Rental::query()
-            ->with(['user', 'gadget.category', 'bundle', 'collectedByAdmin'])
+            ->with(['user', 'gadget.category', 'bundle', 'collectedByAdmin', 'review'])
             ->latest()
             ->paginate(10);
 
         return view('admin.rentals.index', compact('rentals'));
+    }
+
+    public function show(Request $request, Rental $rental)
+    {
+        abort_unless(auth()->check(), 403);
+
+        if ($request->routeIs('admin.rentals.show')) {
+            abort_unless(auth()->user()->isAdmin(), 403);
+
+            $rental->load(['user', 'gadget.category', 'bundle', 'collectedByAdmin', 'review']);
+
+            return view('admin.rentals.show', compact('rental'));
+        }
+
+        abort_unless(auth()->user()->isCustomer(), 403);
+        abort_unless($rental->user_id === auth()->id(), 403);
+
+        $rental->load(['gadget.category', 'bundle', 'collectedByAdmin', 'review']);
+
+        return view('customer.rentals.show', compact('rental'));
     }
 
     public function scan()
@@ -254,6 +274,13 @@ class RentalController extends Controller
             'handed_over_at' => $rental->handed_over_at?->toIso8601String(),
             'returned_at' => $rental->returned_at?->toIso8601String(),
             'pickup_type' => $rental->pickup_type,
+            'deposit_amount' => (float) ($rental->deposit_amount ?? 0),
+            'days_overdue' => $rental->daysOverdue(),
+            'late_fee_amount' => $rental->daysOverdue() > 0
+                ? $rental->daysOverdue() * (float) ($rental->isBundle()
+                    ? ($rental->bundle?->late_fee_per_day ?? 0)
+                    : ($rental->gadget?->late_fee_per_day ?? 0))
+                : 0,
             'next_action' => $this->determineScanNextAction($rental),
         ]);
     }
@@ -359,6 +386,12 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isAdmin(), 403);
 
         if ($rental->status !== 'approved') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Only approved rentals can be marked as returned.',
+                ], 422);
+            }
+
             abort(422, 'Only approved rentals can be marked as returned.');
         }
 
@@ -432,6 +465,18 @@ class RentalController extends Controller
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new RentalCompleted($rental));
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Return confirmed successfully.',
+                'rental_id' => $rental->id,
+                'returned_at' => $rental->returned_at?->toIso8601String(),
+                'deposit_status' => $rental->deposit_status,
+                'deposit_refund_amount' => (float) ($rental->deposit_refund_amount ?? 0),
+                'late_fee_amount' => (float) ($rental->late_fee_amount ?? 0),
+                'late_fee_waived' => (bool) $rental->late_fee_waived,
+            ]);
+        }
 
         return back()->with('success', 'Rental marked as returned successfully.');
     }

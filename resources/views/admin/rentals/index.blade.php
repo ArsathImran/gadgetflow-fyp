@@ -5,7 +5,7 @@
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                     {{ __('Rental Requests') }}
                 </h2>
-                <p class="text-sm text-gray-600">Review rental requests and payment proofs.</p>
+                <p class="text-sm text-gray-600">Review rental requests, payment proofs, and return details.</p>
             </div>
         </div>
     </x-slot>
@@ -55,9 +55,6 @@
                                                     : ucwords(str_replace('_', ' ', $rental->payment_status)));
                                             $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                                             $daysOverdue = $rental->daysOverdue();
-                                            $calculatedLateFee = $daysOverdue * (float) ($rental->isBundle()
-                                                ? ($rental->bundle?->late_fee_per_day ?? 0)
-                                                : ($rental->gadget?->late_fee_per_day ?? 0));
                                         @endphp
                                         <tr id="rental-{{ $rental->id }}">
                                             <td class="px-6 py-4 text-sm text-gray-600">
@@ -122,23 +119,9 @@
                                             </td>
                                             <td class="px-6 py-4 text-sm text-gray-600">
                                                 @if (count($paymentProofs))
-                                                    <div class="flex max-w-xs flex-wrap gap-3">
-                                                        @foreach ($paymentProofs as $proof)
-                                                            @php
-                                                                $extension = strtolower(pathinfo($proof, PATHINFO_EXTENSION));
-                                                                $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], true);
-                                                            @endphp
-                                                            <a href="{{ asset('storage/' . $proof) }}" target="_blank" class="block">
-                                                                @if ($isImage)
-                                                                    <img src="{{ asset('storage/' . $proof) }}" alt="Payment proof {{ $loop->iteration }}" class="h-16 w-16 rounded-lg border border-gray-200 object-cover">
-                                                                @else
-                                                                    <span class="inline-flex rounded-md border border-indigo-200 px-3 py-2 text-indigo-600 hover:bg-indigo-50">
-                                                                        View file {{ $loop->iteration }}
-                                                                    </span>
-                                                                @endif
-                                                            </a>
-                                                        @endforeach
-                                                    </div>
+                                                    <a href="{{ route('admin.rentals.show', $rental) }}" class="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100">
+                                                        View Proof ({{ count($paymentProofs) }})
+                                                    </a>
                                                 @else
                                                     -
                                                 @endif
@@ -171,9 +154,6 @@
                                                     </div>
                                                     <div class="mt-1 text-xs text-gray-500">
                                                         Condition: {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '-')) }}
-                                                    </div>
-                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-xs text-gray-500">
-                                                        Notes: {{ $rental->return_notes ?: '-' }}
                                                     </div>
                                                 @endif
                                             </td>
@@ -215,70 +195,19 @@
                                                                 </button>
                                                             </form>
                                                         @else
-                                                            <span class="text-gray-400">Awaiting proof</span>
+                                                            <span class="inline-flex items-center px-1 text-xs text-gray-400">Awaiting proof</span>
                                                         @endif
                                                     @endif
 
-                                                    @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'pending_collection')
-                                                        <form method="POST" action="{{ route('admin.rentals.payment.collect', $rental) }}">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <button type="submit" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
-                                                                Mark Payment Collected
-                                                            </button>
-                                                        </form>
+                                                    @if ($rental->status === 'approved')
+                                                        <a href="{{ route('admin.scan') }}" class="rounded-md border border-sky-300 px-3 py-2 text-sky-700 transition hover:bg-sky-50">
+                                                            Scan QR
+                                                        </a>
                                                     @endif
 
-                                                    @if ($rental->status === 'approved')
-                                                        <form method="POST" action="{{ route('admin.rentals.return', $rental) }}" class="w-full max-w-xs rounded-md border border-blue-200 bg-blue-50 p-3 text-left" x-data="{ depositDecision: '{{ old('deposit_decision', 'full_refund') }}' }">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
-                                                                Condition on Return
-                                                            </label>
-                                                            <select name="condition_on_return" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
-                                                                <option value="good">Good</option>
-                                                                <option value="damaged">Damaged</option>
-                                                                <option value="missing_parts">Missing Parts</option>
-                                                            </select>
-                                                            <label class="mt-3 mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
-                                                                Return Notes
-                                                            </label>
-                                                            <textarea name="return_notes" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Optional notes about the returned item.">{{ old('return_notes') }}</textarea>
-                                                            <label class="mt-3 mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
-                                                                Deposit Decision
-                                                            </label>
-                                                            <select name="deposit_decision" x-model="depositDecision" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
-                                                                <option value="full_refund">Full Refund</option>
-                                                                <option value="partial_refund">Partial Refund</option>
-                                                                <option value="deduct_all">Deduct All</option>
-                                                            </select>
-                                                            <div class="mt-3" x-show="depositDecision === 'partial_refund'">
-                                                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
-                                                                    Deposit Refund Amount
-                                                                </label>
-                                                                <input type="number" name="deposit_refund_amount" min="0" max="{{ $rental->deposit_amount ?? 0 }}" step="0.01" value="{{ old('deposit_refund_amount', $rental->deposit_amount) }}" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400">
-                                                            </div>
-                                                            <div class="mt-3" x-show="depositDecision === 'partial_refund' || depositDecision === 'deduct_all'">
-                                                                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
-                                                                    Deduction Reason
-                                                                </label>
-                                                                <textarea name="deposit_deduction_reason" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Required when the deposit is not fully refunded.">{{ old('deposit_deduction_reason') }}</textarea>
-                                                            </div>
-                                                            @if ($rental->isOverdue())
-                                                                <div class="mt-3 rounded-md border border-orange-200 bg-orange-50 px-3 py-3 text-sm text-orange-800">
-                                                                    Late fee: {{ number_format($calculatedLateFee, 2) }} for {{ $daysOverdue }} day{{ $daysOverdue === 1 ? '' : 's' }} overdue
-                                                                </div>
-                                                                <label class="mt-3 inline-flex items-center gap-2 text-sm text-blue-900">
-                                                                    <input type="checkbox" name="waive_late_fee" value="1" @checked(old('waive_late_fee')) class="rounded border-blue-300 text-blue-600 focus:ring-blue-500">
-                                                                    <span>Waive late fee</span>
-                                                                </label>
-                                                            @endif
-                                                            <button type="submit" class="mt-3 rounded-md border border-blue-300 px-3 py-2 text-blue-700 transition hover:bg-blue-100">
-                                                                Mark as Returned
-                                                            </button>
-                                                        </form>
-                                                    @endif
+                                                    <a href="{{ route('admin.rentals.show', $rental) }}" class="rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-700 transition hover:bg-slate-50">
+                                                        View
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>

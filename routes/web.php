@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/rentals/create/{gadget}', [RentalController::class, 'create'])->name('rentals.create');
     Route::post('/rentals', [RentalController::class, 'store'])->name('customer.rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('customer.rentals.index');
+    Route::get('/my-rentals/{rental}', [RentalController::class, 'show'])->name('customer.rentals.show');
     Route::get('/rentals/{rental}/qr', [RentalController::class, 'showQr'])->name('customer.rentals.qr');
     Route::patch('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('customer.rentals.cancel');
     Route::post('/rentals/{rental}/review', [ReviewController::class, 'store'])->name('customer.rentals.review.store');
@@ -41,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/scan', [RentalController::class, 'scan'])->name('admin.scan');
     Route::post('/admin/scan/lookup', [RentalController::class, 'lookupByToken'])->name('admin.scan.lookup');
     Route::get('/admin/rentals', [RentalController::class, 'adminIndex'])->name('admin.rentals.index');
+    Route::get('/admin/rentals/{rental}', [RentalController::class, 'show'])->name('admin.rentals.show');
     Route::get('/admin/bundles', [BundleController::class, 'index'])->name('admin.bundles.index');
     Route::get('/admin/bundles/create', [BundleController::class, 'create'])->name('admin.bundles.create');
     Route::post('/admin/bundles', [BundleController::class, 'store'])->name('admin.bundles.store');
