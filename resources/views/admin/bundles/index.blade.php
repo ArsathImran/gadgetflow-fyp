@@ -2,13 +2,13 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-display text-xl font-semibold text-ink leading-tight">
                     {{ __('Bundles') }}
                 </h2>
-                <p class="mt-1 text-sm text-gray-600">Create and manage themed rental packages built from existing gadgets.</p>
+                <p class="mt-1 font-body text-sm text-slate">Create and manage themed rental packages built from existing gadgets.</p>
             </div>
 
-            <a href="{{ route('admin.bundles.create') }}" class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
+            <a href="{{ route('admin.bundles.create') }}" class="inline-flex items-center rounded-md bg-indigo px-4 py-2 text-sm font-body font-semibold text-white shadow-sm transition hover:bg-indigo-500">
                 {{ __('Create Bundle') }}
             </a>
         </div>
@@ -24,19 +24,19 @@
                         </div>
                     @endif
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-cloud">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Image</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Daily Rental Price</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Actions</th>
+                                    <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Image</th>
+                                    <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Name</th>
+                                    <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Type</th>
+                                    <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Daily Rental Price</th>
+                                    <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Status</th>
+                                    <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 bg-white">
+                            <tbody class="divide-y divide-slate-200 bg-white">
                                 @forelse ($bundles as $bundle)
                                     <tr>
                                         <td class="px-6 py-4">
@@ -47,31 +47,37 @@
                                                     class="h-14 w-14 rounded-lg border border-gray-200 object-cover"
                                                 >
                                             @else
-                                                <div class="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed border-gray-300 text-xs text-gray-400">
+                                                <div class="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed border-gray-300 font-body text-xs text-gray-400">
                                                     No image
                                                 </div>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ $bundle->name }}</div>
+                                            <div class="font-display text-sm font-semibold text-ink">{{ $bundle->name }}</div>
                                             @if ($bundle->description)
-                                                <div class="mt-1 max-w-md text-xs text-gray-500">{{ $bundle->description }}</div>
+                                                <div class="mt-1 max-w-md font-body text-xs text-slate-500">{{ $bundle->description }}</div>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-sm">
-                                            <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $bundle->type === 'wedding' ? 'bg-pink-100 text-pink-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                            <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold {{ $bundle->type === 'wedding' ? 'bg-pink-100 text-pink-800' : 'bg-indigo-100 text-indigo-800' }}">
                                                 {{ $bundle->type === 'wedding' ? 'Wedding' : 'Short Film' }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-600">{{ $bundle->daily_rental_price !== null ? number_format($bundle->daily_rental_price, 2) : '-' }}</td>
                                         <td class="px-6 py-4 text-sm">
-                                            @if ($bundle->status === 'active')
-                                                <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-semibold text-green-800">Active</span>
+                                            @if ($bundle->daily_rental_price !== null)
+                                                <x-spec-chip>{{ number_format($bundle->daily_rental_price, 2) }}</x-spec-chip>
                                             @else
-                                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-800">Inactive</span>
+                                                <span class="font-body text-slate-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4 text-right text-sm font-medium">
+                                        <td class="px-6 py-4 text-sm">
+                                            @if ($bundle->status === 'active')
+                                                <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">Active</span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-body text-xs font-semibold text-gray-800">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 text-right font-body text-sm font-medium">
                                             <div class="inline-flex flex-wrap justify-end gap-2">
                                                 <a href="{{ route('admin.bundles.edit', $bundle) }}" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">Edit</a>
                                                 <form action="{{ route('admin.bundles.destroy', $bundle) }}" method="POST" onsubmit="return confirm('Delete this bundle?');">
@@ -84,7 +90,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-500">
+                                        <td colspan="6" class="px-6 py-10 text-center font-body text-sm text-gray-500">
                                             No bundles found.
                                         </td>
                                     </tr>

@@ -32,5 +32,11 @@
                 {{ $slot }}
             </main>
         </div>
+
+        @auth
+            @if (auth()->user()->isCustomer())
+                <x-chat-widget />
+            @endif
+        @endauth
     </body>
 </html>

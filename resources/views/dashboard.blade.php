@@ -25,28 +25,28 @@
             @if ($user->isAdmin())
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <p class="text-sm font-medium text-slate-500">Total Gadgets</p>
-                        <p class="mt-4 text-4xl font-semibold text-slate-950">{{ $totalGadgetsCount }}</p>
+                        <p class="font-body text-sm font-medium text-slate">Total Gadgets</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $totalGadgetsCount }}</p>
                     </div>
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <p class="text-sm font-medium text-slate-500">Active Rentals</p>
-                        <p class="mt-4 text-4xl font-semibold text-slate-950">{{ $activeRentalsCount }}</p>
+                        <p class="font-body text-sm font-medium text-slate">Active Rentals</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $activeRentalsCount }}</p>
                     </div>
                     <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(245,158,11,0.10)]">
-                        <p class="text-sm font-medium text-amber-700">Pending Approvals</p>
-                        <p class="mt-4 text-4xl font-semibold text-amber-900">{{ $pendingApprovalsCount }}</p>
+                        <p class="font-body text-sm font-medium text-amber-700">Pending Approvals</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-amber-900">{{ $pendingApprovalsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-blue-200 bg-blue-50 p-6 shadow-[0_18px_40px_rgba(59,130,246,0.10)]">
-                        <p class="text-sm font-medium text-blue-700">Pending Payments</p>
-                        <p class="mt-4 text-4xl font-semibold text-blue-900">{{ $pendingPaymentsCount }}</p>
+                    <div class="rounded-3xl border border-indigo-200 bg-indigo-50 p-6 shadow-[0_18px_40px_rgba(79,70,229,0.10)]">
+                        <p class="font-body text-sm font-medium text-indigo-700">Pending Payments</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-indigo-900">{{ $pendingPaymentsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-orange-200 bg-orange-50 p-6 shadow-[0_18px_40px_rgba(249,115,22,0.10)]">
-                        <p class="text-sm font-medium text-orange-700">Overdue Rentals</p>
-                        <p class="mt-4 text-4xl font-semibold text-orange-900">{{ $overdueRentalsCount }}</p>
+                    <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(251,191,36,0.12)]">
+                        <p class="font-body text-sm font-medium text-amber-700">Overdue Rentals</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-amber-900">{{ $overdueRentalsCount }}</p>
                     </div>
                     <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)]">
-                        <p class="text-sm font-medium text-emerald-700">Revenue This Month</p>
-                        <p class="mt-4 text-4xl font-semibold text-emerald-900">{{ number_format((float) $revenueThisMonth, 2) }}</p>
+                        <p class="font-body text-sm font-medium text-emerald-700">Revenue This Month</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-emerald-900">{{ number_format((float) $revenueThisMonth, 2) }}</p>
                     </div>
                 </div>
 
@@ -54,8 +54,8 @@
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h3 class="text-lg font-semibold text-slate-950">Rentals Per Month</h3>
-                                <p class="mt-1 text-sm text-slate-500">New rentals created over the last six months.</p>
+                                <h3 class="font-display text-lg font-semibold text-ink">Rentals Per Month</h3>
+                                <p class="mt-1 font-body text-sm text-slate">New rentals created over the last six months.</p>
                             </div>
                         </div>
                         <div class="mt-6 h-80">
@@ -67,23 +67,23 @@
                         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-slate-950">Low Stock Gadgets</h3>
-                                    <p class="mt-1 text-sm text-slate-500">Items that may need restocking soon.</p>
+                                    <h3 class="font-display text-lg font-semibold text-ink">Low Stock Gadgets</h3>
+                                    <p class="mt-1 font-body text-sm text-slate">Items that may need restocking soon.</p>
                                 </div>
                             </div>
                             <div class="mt-6 space-y-4">
                                 @forelse ($lowStockGadgets as $gadget)
-                                    <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-cloud px-4 py-3">
                                         <div>
-                                            <p class="font-semibold text-slate-900">{{ $gadget->name }}</p>
-                                            <p class="text-sm text-slate-500">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                                            <p class="font-display font-semibold text-ink">{{ $gadget->name }}</p>
+                                            <p class="font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-rose-100 px-3 py-1 text-sm font-semibold text-rose-700">
+                                        <span class="inline-flex rounded-full bg-rose-100 px-3 py-1 font-mono text-sm font-semibold text-rose-700">
                                             {{ $gadget->quantity }} left
                                         </span>
                                     </div>
                                 @empty
-                                    <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+                                    <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-6 font-body text-sm text-slate">
                                         No low stock gadgets right now.
                                     </p>
                                 @endforelse
@@ -93,23 +93,23 @@
                         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-slate-950">Top Rented Gadgets</h3>
-                                    <p class="mt-1 text-sm text-slate-500">Most requested devices across all rentals.</p>
+                                    <h3 class="font-display text-lg font-semibold text-ink">Top Rented Gadgets</h3>
+                                    <p class="mt-1 font-body text-sm text-slate">Most requested devices across all rentals.</p>
                                 </div>
                             </div>
                             <div class="mt-6 space-y-4">
                                 @forelse ($topRentedGadgets as $gadget)
                                     <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
                                         <div>
-                                            <p class="font-semibold text-slate-900">{{ $gadget->name }}</p>
-                                            <p class="text-sm text-slate-500">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                                            <p class="font-display font-semibold text-ink">{{ $gadget->name }}</p>
+                                            <p class="font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
                                         </div>
-                                        <span class="inline-flex rounded-full bg-cyan-100 px-3 py-1 text-sm font-semibold text-cyan-700">
+                                        <span class="inline-flex rounded-full bg-cyan-100 px-3 py-1 font-mono text-sm font-semibold text-cyan-700">
                                             {{ $gadget->rentals_count }} rentals
                                         </span>
                                     </div>
                                 @empty
-                                    <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500">
+                                    <p class="rounded-2xl border border-dashed border-slate-300 px-4 py-6 font-body text-sm text-slate">
                                         No rental activity recorded yet.
                                     </p>
                                 @endforelse
@@ -120,40 +120,40 @@
 
                 <div class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                     <div class="flex flex-col gap-2">
-                        <h3 class="text-lg font-semibold text-slate-950">Reports</h3>
-                        <p class="text-sm text-slate-500">Export filtered rental records or download a monthly revenue summary.</p>
+                        <h3 class="font-display text-lg font-semibold text-ink">Reports</h3>
+                        <p class="font-body text-sm text-slate">Export filtered rental records or download a monthly revenue summary.</p>
                     </div>
 
                     <div class="mt-6 grid gap-6 xl:grid-cols-2">
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                            <h4 class="text-base font-semibold text-slate-900">Rentals CSV</h4>
-                            <p class="mt-1 text-sm text-slate-500">Filter rentals by created date and status before exporting.</p>
+                        <div class="rounded-2xl border border-slate-200 bg-cloud p-5">
+                            <h4 class="font-display text-base font-semibold text-ink">Rentals CSV</h4>
+                            <p class="mt-1 font-body text-sm text-slate">Filter rentals by created date and status before exporting.</p>
 
                             <form method="GET" action="{{ route('admin.reports.rentals-csv') }}" class="mt-5 grid gap-3 sm:grid-cols-2">
                                 <div>
-                                    <label for="report-from" class="text-sm font-medium text-slate-700">From</label>
+                                    <label for="report-from" class="font-body text-sm font-medium text-slate-700">From</label>
                                     <input
                                         id="report-from"
                                         type="date"
                                         name="from"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 font-body shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                 </div>
                                 <div>
-                                    <label for="report-to" class="text-sm font-medium text-slate-700">To</label>
+                                    <label for="report-to" class="font-body text-sm font-medium text-slate-700">To</label>
                                     <input
                                         id="report-to"
                                         type="date"
                                         name="to"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 font-body shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label for="report-status" class="text-sm font-medium text-slate-700">Status</label>
+                                    <label for="report-status" class="font-body text-sm font-medium text-slate-700">Status</label>
                                     <select
                                         id="report-status"
                                         name="status"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 font-body shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                         <option value="">All Statuses</option>
                                         <option value="pending">Pending</option>
@@ -164,30 +164,30 @@
                                     </select>
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <button type="submit" class="inline-flex items-center rounded-md bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800">
+                                    <button type="submit" class="inline-flex items-center rounded-md bg-ink px-4 py-2 text-sm font-body font-semibold text-white shadow-sm transition hover:bg-slate-900">
                                         Download CSV
                                     </button>
                                 </div>
                             </form>
                         </div>
 
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                            <h4 class="text-base font-semibold text-slate-900">Revenue PDF</h4>
-                            <p class="mt-1 text-sm text-slate-500">Generate a downloadable monthly summary for finance reporting.</p>
+                        <div class="rounded-2xl border border-slate-200 bg-cloud p-5">
+                            <h4 class="font-display text-base font-semibold text-ink">Revenue PDF</h4>
+                            <p class="mt-1 font-body text-sm text-slate">Generate a downloadable monthly summary for finance reporting.</p>
 
                             <form method="GET" action="{{ route('admin.reports.revenue-pdf') }}" class="mt-5 flex flex-col gap-3">
                                 <div>
-                                    <label for="report-month" class="text-sm font-medium text-slate-700">Month</label>
+                                    <label for="report-month" class="font-body text-sm font-medium text-slate-700">Month</label>
                                     <input
                                         id="report-month"
                                         type="month"
                                         name="month"
                                         value="{{ now()->format('Y-m') }}"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="mt-1 block w-full rounded-md border-gray-300 font-body shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
                                 </div>
                                 <div>
-                                    <button type="submit" class="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">
+                                    <button type="submit" class="inline-flex items-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-body font-semibold text-white shadow-sm transition hover:bg-emerald-500">
                                         Download Revenue PDF
                                     </button>
                                 </div>
@@ -286,7 +286,7 @@
                         datasets: [{
                             label: 'Rentals',
                             data: rentalCounts,
-                            backgroundColor: '#2563eb',
+                            backgroundColor: '#4F46E5',
                             borderRadius: 12,
                             maxBarThickness: 48,
                         }],

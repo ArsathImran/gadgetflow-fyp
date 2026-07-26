@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\GadgetController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerBundleController;
 use App\Http\Controllers\CustomerGadgetController;
@@ -33,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals/{rental}/review', [ReviewController::class, 'store'])->name('customer.rentals.review.store');
     Route::get('/rentals/{rental}/payment', [RentalController::class, 'paymentCreate'])->name('customer.rentals.payment.create');
     Route::post('/rentals/{rental}/payment', [RentalController::class, 'paymentStore'])->name('customer.rentals.payment.store');
+    Route::get('/chat/history', [ChatController::class, 'index'])->name('chat.history');
+    Route::post('/chat/send', [ChatController::class, 'send'])->name('chat.send');
 });
 
 Route::resource('categories', CategoryController::class)->middleware(['auth']);

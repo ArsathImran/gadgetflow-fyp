@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-display text-xl font-semibold text-ink leading-tight">
                     {{ __('QR Scanner') }}
                 </h2>
-                <p class="text-sm text-gray-600">Scan customer pickup and return QR codes without leaving the camera view.</p>
+                <p class="font-body text-sm text-slate">Scan customer pickup and return QR codes without leaving the camera view.</p>
             </div>
         </div>
     </x-slot>
@@ -14,19 +14,19 @@
         <div class="mx-auto flex max-w-7xl flex-col gap-6 sm:px-6 lg:px-8 lg:grid lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
             <section class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="border-b border-gray-100 px-6 py-5">
-                    <h3 class="text-base font-semibold text-gray-900">Camera Scanner</h3>
-                    <p class="mt-1 text-sm text-gray-600">Point the device camera at the customer's QR code. The scanner stays active for repeated scans.</p>
+                    <h3 class="font-display text-base font-semibold text-ink">Camera Scanner</h3>
+                    <p class="mt-1 font-body text-sm text-slate">Point the device camera at the customer's QR code. The scanner stays active for repeated scans.</p>
                 </div>
                 <div class="p-6">
-                    <div class="rounded-3xl border border-dashed border-sky-200 bg-sky-50/70 p-4">
+                    <div class="rounded-3xl border border-dashed border-cyan-200 bg-cyan-50/70 p-4">
                         <div id="qr-reader" class="mx-auto max-w-2xl overflow-hidden rounded-2xl bg-white"></div>
                     </div>
 
                     <div class="mt-4 flex flex-wrap items-center gap-3">
-                        <span id="scanner-status-badge" class="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-sky-800">
+                        <span id="scanner-status-badge" class="inline-flex rounded-full bg-cyan-100 px-3 py-1 font-body text-xs font-semibold uppercase tracking-wider text-cyan-800">
                             Scanning...
                         </span>
-                        <p id="scanner-status-text" class="text-sm text-gray-600">
+                        <p id="scanner-status-text" class="font-body text-sm text-slate">
                             Waiting for a QR code.
                         </p>
                     </div>
@@ -35,83 +35,83 @@
 
             <aside class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="border-b border-gray-100 px-6 py-5">
-                    <h3 class="text-base font-semibold text-gray-900">Scan Result</h3>
-                    <p class="mt-1 text-sm text-gray-600">Rental details and the next valid action will appear here after each scan.</p>
+                    <h3 class="font-display text-base font-semibold text-ink">Scan Result</h3>
+                    <p class="mt-1 font-body text-sm text-slate">Rental details and the next valid action will appear here after each scan.</p>
                 </div>
 
                 <div class="p-6">
                     <div id="result-empty" class="rounded-2xl border border-dashed border-gray-300 px-5 py-10 text-center">
-                        <p class="text-sm font-semibold text-gray-900">No scan result yet.</p>
-                        <p class="mt-2 text-sm text-gray-500">Scan a customer QR code to load rental details.</p>
+                        <p class="font-display text-sm font-semibold text-ink">No scan result yet.</p>
+                        <p class="mt-2 font-body text-sm text-gray-500">Scan a customer QR code to load rental details.</p>
                     </div>
 
                     <div id="result-panel" class="hidden space-y-4">
                         <div id="result-message" class="hidden rounded-md border px-4 py-3 text-sm"></div>
 
-                        <div class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-                            <dl class="space-y-3 text-sm text-gray-700">
+                        <div class="rounded-2xl border border-gray-200 bg-cloud p-5">
+                            <dl class="space-y-3 font-body text-sm text-gray-700">
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Rental ID</dt>
-                                    <dd id="result-rental-id" class="text-right font-semibold text-gray-900"></dd>
+                                    <dt class="font-medium text-slate-500">Rental ID</dt>
+                                    <dd id="result-rental-id" class="text-right font-mono font-semibold text-ink"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Rental Item</dt>
-                                    <dd id="result-gadget-name" class="text-right font-semibold text-gray-900"></dd>
+                                    <dt class="font-medium text-slate-500">Rental Item</dt>
+                                    <dd id="result-gadget-name" class="text-right font-display font-semibold text-ink"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Customer</dt>
-                                    <dd id="result-customer-name" class="text-right font-semibold text-gray-900"></dd>
+                                    <dt class="font-medium text-slate-500">Customer</dt>
+                                    <dd id="result-customer-name" class="text-right font-semibold text-ink"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Pickup Type</dt>
+                                    <dt class="font-medium text-slate-500">Pickup Type</dt>
                                     <dd id="result-pickup-type" class="text-right"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Current Status</dt>
+                                    <dt class="font-medium text-slate-500">Current Status</dt>
                                     <dd>
-                                        <span id="result-status-badge" class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"></span>
+                                        <span id="result-status-badge" class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold"></span>
                                     </dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Handed Over</dt>
+                                    <dt class="font-medium text-slate-500">Handed Over</dt>
                                     <dd id="result-handed-over-at" class="text-right"></dd>
                                 </div>
                                 <div class="flex items-start justify-between gap-4">
-                                    <dt class="font-medium text-gray-500">Returned At</dt>
+                                    <dt class="font-medium text-slate-500">Returned At</dt>
                                     <dd id="result-returned-at" class="text-right"></dd>
                                 </div>
                             </dl>
                         </div>
 
-                        <div id="action-panel" class="rounded-2xl border border-sky-200 bg-sky-50 p-5">
-                            <p id="action-text" class="text-sm text-sky-900"></p>
+                        <div id="action-panel" class="rounded-2xl border border-cyan-200 bg-cyan-50 p-5">
+                            <p id="action-text" class="font-body text-sm text-cyan-900"></p>
 
                             <div class="mt-4 flex flex-wrap gap-3">
-                                <button id="confirm-handover-button" type="button" class="hidden rounded-md bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-500">
+                                <button id="confirm-handover-button" type="button" class="hidden rounded-md bg-indigo px-4 py-2 text-sm font-body font-semibold text-white transition hover:bg-indigo-500">
                                     Confirm Handover
                                 </button>
 
-                                <button id="scan-again-button" type="button" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">
+                                <button id="scan-again-button" type="button" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-body font-semibold text-gray-700 transition hover:bg-gray-50">
                                     Clear Result
                                 </button>
                             </div>
                         </div>
 
-                        <div id="return-form-panel" class="hidden rounded-2xl border border-blue-200 bg-blue-50 p-5">
+                        <div id="return-form-panel" class="hidden rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
                             <form id="return-form" x-data="{ depositDecision: 'full_refund' }" class="space-y-4">
                                 <input type="hidden" name="_method" value="PATCH">
 
                                 <div>
-                                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-800">Inline Return</p>
-                                    <p class="mt-1 text-sm text-blue-900">Complete the return workflow directly from the scanner result panel.</p>
+                                    <p class="font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">Inline Return</p>
+                                    <p class="mt-1 font-body text-sm text-indigo-900">Complete the return workflow directly from the scanner result panel.</p>
                                 </div>
 
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div>
-                                        <label for="scan-condition-on-return" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        <label for="scan-condition-on-return" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">
                                             Condition on Return
                                         </label>
-                                        <select id="scan-condition-on-return" name="condition_on_return" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                        <select id="scan-condition-on-return" name="condition_on_return" class="w-full rounded-md border border-indigo-200 px-3 py-2 font-body text-sm text-gray-700 focus:border-indigo-400 focus:ring-indigo-400" required>
                                             <option value="good">Good</option>
                                             <option value="damaged">Damaged</option>
                                             <option value="missing_parts">Missing Parts</option>
@@ -119,10 +119,10 @@
                                     </div>
 
                                     <div>
-                                        <label for="scan-deposit-decision" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                        <label for="scan-deposit-decision" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">
                                             Deposit Decision
                                         </label>
-                                        <select id="scan-deposit-decision" name="deposit_decision" x-model="depositDecision" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" required>
+                                        <select id="scan-deposit-decision" name="deposit_decision" x-model="depositDecision" class="w-full rounded-md border border-indigo-200 px-3 py-2 font-body text-sm text-gray-700 focus:border-indigo-400 focus:ring-indigo-400" required>
                                             <option value="full_refund">Full Refund</option>
                                             <option value="partial_refund">Partial Refund</option>
                                             <option value="deduct_all">Deduct All</option>
@@ -131,36 +131,36 @@
                                 </div>
 
                                 <div>
-                                    <label for="scan-return-notes" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    <label for="scan-return-notes" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">
                                         Return Notes
                                     </label>
-                                    <textarea id="scan-return-notes" name="return_notes" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Optional notes about the returned item."></textarea>
+                                    <textarea id="scan-return-notes" name="return_notes" rows="3" class="w-full rounded-md border border-indigo-200 px-3 py-2 font-body text-sm text-gray-700 focus:border-indigo-400 focus:ring-indigo-400" placeholder="Optional notes about the returned item."></textarea>
                                 </div>
 
                                 <div x-show="depositDecision === 'partial_refund'">
-                                    <label for="scan-deposit-refund-amount" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    <label for="scan-deposit-refund-amount" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">
                                         Deposit Refund Amount
                                     </label>
-                                    <input id="scan-deposit-refund-amount" type="number" name="deposit_refund_amount" min="0" step="0.01" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400">
+                                    <input id="scan-deposit-refund-amount" type="number" name="deposit_refund_amount" min="0" step="0.01" class="w-full rounded-md border border-indigo-200 px-3 py-2 font-mono text-sm text-gray-700 focus:border-indigo-400 focus:ring-indigo-400">
                                 </div>
 
                                 <div x-show="depositDecision === 'partial_refund' || depositDecision === 'deduct_all'">
-                                    <label for="scan-deposit-deduction-reason" class="mb-2 block text-xs font-semibold uppercase tracking-wider text-blue-800">
+                                    <label for="scan-deposit-deduction-reason" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">
                                         Deduction Reason
                                     </label>
-                                    <textarea id="scan-deposit-deduction-reason" name="deposit_deduction_reason" rows="3" class="w-full rounded-md border border-blue-200 px-3 py-2 text-sm text-gray-700 focus:border-blue-400 focus:ring-blue-400" placeholder="Required when the deposit is not fully refunded."></textarea>
+                                    <textarea id="scan-deposit-deduction-reason" name="deposit_deduction_reason" rows="3" class="w-full rounded-md border border-indigo-200 px-3 py-2 font-body text-sm text-gray-700 focus:border-indigo-400 focus:ring-indigo-400" placeholder="Required when the deposit is not fully refunded."></textarea>
                                 </div>
 
-                                <div id="return-late-fee-box" class="hidden rounded-md border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+                                <div id="return-late-fee-box" class="hidden rounded-md border border-amber-200 bg-amber-50 px-4 py-3 font-body text-sm text-amber-800">
                                     <p id="return-late-fee-text"></p>
-                                    <label class="mt-3 inline-flex items-center gap-2 text-sm text-blue-900">
-                                        <input id="scan-waive-late-fee" type="checkbox" name="waive_late_fee" value="1" class="rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                                    <label class="mt-3 inline-flex items-center gap-2 font-body text-sm text-indigo-900">
+                                        <input id="scan-waive-late-fee" type="checkbox" name="waive_late_fee" value="1" class="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500">
                                         <span>Waive late fee</span>
                                     </label>
                                 </div>
 
                                 <div class="flex flex-wrap gap-3">
-                                    <button id="confirm-return-button" type="submit" class="rounded-md border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100">
+                                    <button id="confirm-return-button" type="submit" class="rounded-md border border-indigo-300 px-4 py-2 font-body text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100">
                                         Confirm Return
                                     </button>
                                 </div>
@@ -210,20 +210,20 @@
 
             function updateScannerState(label, text, tone = 'sky') {
                 const badgeClasses = {
-                    sky: 'bg-sky-100 text-sky-800',
+                    sky: 'bg-cyan-100 text-cyan-800',
                     amber: 'bg-amber-100 text-amber-800',
                     green: 'bg-green-100 text-green-800',
                     red: 'bg-red-100 text-red-800',
                 };
 
                 statusBadge.textContent = label;
-                statusBadge.className = `inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${badgeClasses[tone] ?? badgeClasses.sky}`;
+                statusBadge.className = `inline-flex rounded-full px-3 py-1 font-body text-xs font-semibold uppercase tracking-wider ${badgeClasses[tone] ?? badgeClasses.sky}`;
                 statusText.textContent = text;
             }
 
             function showMessage(message, tone = 'sky') {
                 const toneClasses = {
-                    sky: 'border-sky-200 bg-sky-50 text-sky-800',
+                    sky: 'border-cyan-200 bg-cyan-50 text-cyan-800',
                     amber: 'border-amber-200 bg-amber-50 text-amber-800',
                     green: 'border-green-200 bg-green-50 text-green-800',
                     red: 'border-red-200 bg-red-50 text-red-800',
