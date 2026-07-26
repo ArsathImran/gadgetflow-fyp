@@ -42,6 +42,9 @@
                         <x-nav-link :href="route('customer.rentals.index')" :active="request()->routeIs('customer.rentals.*')">
                             {{ __('My Rentals') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('customer.rewards.index')" :active="request()->routeIs('customer.rewards.*')">
+                            {{ __('Rewards') }}
+                        </x-nav-link>
                         <x-nav-link :href="route('customer.bundles.index', ['type' => 'wedding'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'wedding'">
                             {{ __('Wedding Combo') }}
                         </x-nav-link>
@@ -128,6 +131,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('customer.rentals.index')" :active="request()->routeIs('customer.rentals.*')">
                     {{ __('My Rentals') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('customer.rewards.index')" :active="request()->routeIs('customer.rewards.*')">
+                    {{ __('Rewards') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('customer.bundles.index', ['type' => 'wedding'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'wedding'">
                     {{ __('Wedding Combo') }}

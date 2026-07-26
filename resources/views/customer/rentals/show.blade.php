@@ -29,14 +29,6 @@
                     </div>
                 @endif
 
-                @php
-                    $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
-                        ? 'Pending Collection'
-                        : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
-                            ? 'Payment Collected'
-                            : ucwords(str_replace('_', ' ', $rental->payment_status)));
-                @endphp
-
                 <div class="bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -68,13 +60,7 @@
                                         }
                                     }}
                                 </span>
-                                <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
-                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
-                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
-                                    @else bg-gray-100 text-gray-800 @endif">
-                                    {{ $paymentLabel }}
-                                </span>
+                                <x-payment-status-badge :status="$rental->payment_status" :pickup-type="$rental->pickup_type" collected-label="Payment Collected" />
                             </div>
                         </div>
 
@@ -99,11 +85,32 @@
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Shipping</p>
-                                <p class="mt-2 font-body text-sm font-semibold text-ink">{{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}</p>
+                                <div class="mt-2">
+                                    @if ($rental->pickup_type === 'delivery')
+                                        <x-shipping-status-badge :status="$rental->shipping_status" />
+                                    @else
+                                        <p class="font-body text-sm font-semibold text-ink">-</p>
+                                    @endif
+                                </div>
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Total</p>
                                 <div class="mt-2"><x-spec-chip>{{ number_format($rental->total_amount, 2) }}</x-spec-chip></div>
+                                @if ($rental->points_redeemed > 0)
+                                    <p class="mt-2 font-body text-xs text-indigo-700">
+                                        {{ number_format($rental->points_redeemed) }} pts redeemed ({{ number_format((float) $rental->discount_amount, 2) }} off)
+                                    </p>
+                                @endif
+                                @if ($rental->status === 'completed')
+                                    @php
+                                        $earnedTransaction = $rental->loyaltyTransactions->firstWhere('type', 'earned');
+                                    @endphp
+                                    @if ($earnedTransaction)
+                                        <p class="mt-2 font-body text-xs font-semibold text-green-700">
+                                            +{{ number_format($earnedTransaction->points) }} points earned
+                                        </p>
+                                    @endif
+                                @endif
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Deposit</p>
@@ -132,6 +139,37 @@
                         @endif
                     </div>
                 </div>
+
+                @if ($rental->pickup_type === 'delivery' && $rental->shipping_status !== 'not_applicable')
+                    @php
+                        $shippingStages = [
+                            'waiting_for_shipping' => 'Waiting for Shipping',
+                            'shipped' => 'Shipped',
+                            'out_for_delivery' => 'Out for Delivery',
+                            'delivered' => 'Delivered',
+                        ];
+                        $shippingStageKeys = array_keys($shippingStages);
+                        $currentShippingIndex = array_search($rental->shipping_status, $shippingStageKeys, true);
+                    @endphp
+                    <section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Shipping Progress</p>
+                        <div class="mt-6 flex items-center">
+                            @foreach ($shippingStageKeys as $index => $key)
+                                <span class="h-3 w-3 shrink-0 rounded-full {{ $index <= $currentShippingIndex ? 'bg-cyan-500' : 'bg-gray-200' }}"></span>
+                                @if (! $loop->last)
+                                    <span class="mx-1 h-0.5 flex-1 {{ $index < $currentShippingIndex ? 'bg-cyan-500' : 'bg-gray-200' }}"></span>
+                                @endif
+                            @endforeach
+                        </div>
+                        <div class="mt-2 flex justify-between gap-2">
+                            @foreach ($shippingStages as $key => $label)
+                                <span class="flex-1 text-center font-body text-xs {{ array_search($key, $shippingStageKeys, true) === $currentShippingIndex ? 'font-semibold text-cyan-700' : 'text-slate-400' }}">
+                                    {{ $label }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
 
                 @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'collected' && $rental->payment_collected_at)
                     <section class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">

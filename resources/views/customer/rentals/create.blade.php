@@ -59,8 +59,37 @@
                                     <p class="mt-1 text-sm text-gray-900">Daily: {{ number_format($gadget->daily_rental_price, 2) }}</p>
                                     <p class="text-sm text-gray-900">Hourly: {{ number_format($gadget->hourly_rental_price ?? $gadget->daily_rental_price, 2) }}</p>
                                     <p class="text-sm text-gray-900">Deposit: {{ number_format($gadget->deposit_amount, 2) }}</p>
+                                    <p class="mt-2 text-sm text-indigo-700">Your points balance: <span class="font-semibold">{{ number_format(auth()->user()->loyalty_points) }}</span> pts</p>
                                 </div>
                             </div>
+
+                            @if (auth()->user()->loyalty_points > 0)
+                                <div
+                                    class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4"
+                                    x-data="{ redeemPoints: {{ (int) old('redeem_points', 0) }}, balance: {{ (int) auth()->user()->loyalty_points }}, rate: {{ (float) config('loyalty.redemption_rate') }} }"
+                                >
+                                    <div class="flex items-center justify-between">
+                                        <label for="redeem_points" class="text-sm font-medium text-gray-700">Redeem Points</label>
+                                        <span class="text-xs text-gray-500">Balance: <span class="font-semibold text-indigo-700">{{ number_format(auth()->user()->loyalty_points) }}</span> pts</span>
+                                    </div>
+                                    <input
+                                        id="redeem_points"
+                                        name="redeem_points"
+                                        type="number"
+                                        min="0"
+                                        :max="balance"
+                                        x-model.number="redeemPoints"
+                                        @input="if (redeemPoints > balance) redeemPoints = balance; if (redeemPoints < 0 || isNaN(redeemPoints)) redeemPoints = 0;"
+                                        class="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    >
+                                    <p class="mt-2 text-sm text-indigo-700" x-show="redeemPoints > 0">
+                                        Redeem <span x-text="redeemPoints"></span> points for RM<span x-text="(redeemPoints * rate).toFixed(2)"></span> off.
+                                    </p>
+                                    @error('redeem_points')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
 
                             <div>
                                 <p class="text-sm font-medium text-gray-700">Rental Type</p>

@@ -83,6 +83,9 @@
                             <div class="rounded-2xl bg-gray-50 p-4">
                                 <p class="text-sm text-gray-500">Daily Rental Price</p>
                                 <p class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($gadget->daily_rental_price, 2) }}</p>
+                                @if (auth()->check() && auth()->user()->isCustomer() && auth()->user()->loyalty_points > 0)
+                                    <p class="mt-1 text-xs text-indigo-700">{{ number_format(auth()->user()->loyalty_points) }} points available</p>
+                                @endif
                             </div>
                             <div class="rounded-2xl bg-gray-50 p-4">
                                 <p class="text-sm text-gray-500">Deposit</p>

@@ -12,6 +12,7 @@ use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\RewardsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/rentals/create/{gadget}', [RentalController::class, 'create'])->name('rentals.create');
     Route::post('/rentals', [RentalController::class, 'store'])->name('customer.rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('customer.rentals.index');
+    Route::get('/rewards', [RewardsController::class, 'index'])->name('customer.rewards.index');
     Route::get('/my-rentals/{rental}', [RentalController::class, 'show'])->name('customer.rentals.show');
     Route::get('/rentals/{rental}/qr', [RentalController::class, 'showQr'])->name('customer.rentals.qr');
     Route::patch('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('customer.rentals.cancel');
@@ -57,6 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/admin/rentals/{rental}/reject', [RentalController::class, 'reject'])->name('admin.rentals.reject');
     Route::patch('/admin/rentals/{rental}/payment/collect', [RentalController::class, 'collectPayment'])->name('admin.rentals.payment.collect');
     Route::patch('/admin/rentals/{rental}/return', [RentalController::class, 'markReturned'])->name('admin.rentals.return');
+    Route::patch('/admin/rentals/{rental}/shipping', [RentalController::class, 'updateShipping'])->name('admin.rentals.updateShipping');
     Route::patch('/admin/rentals/{rental}/payment/verify', [RentalController::class, 'verifyPayment'])->name('admin.rentals.payment.verify');
     Route::patch('/admin/rentals/{rental}/payment/reject', [RentalController::class, 'rejectPayment'])->name('admin.rentals.payment.reject');
     Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');

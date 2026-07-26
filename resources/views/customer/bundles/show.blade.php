@@ -101,6 +101,12 @@
                             </div>
                         </div>
 
+                        @if (auth()->user()->loyalty_points > 0)
+                            <p class="mt-4 font-body text-sm text-indigo-700">
+                                Your points balance: <span class="font-semibold">{{ number_format(auth()->user()->loyalty_points) }}</span> pts
+                            </p>
+                        @endif
+
                         <div class="mt-6">
                             <h3 class="font-body text-sm font-semibold uppercase tracking-[0.2em] text-slate">What's Included</h3>
                             <p class="mt-3 whitespace-pre-line font-body text-sm leading-6 text-gray-700">
@@ -111,7 +117,10 @@
                 </div>
             </div>
 
-            <div class="rounded-3xl bg-white p-6 shadow-sm sm:p-8" x-data="{ rentalType: @js(old('rental_type', 'day')) }">
+            <div
+                class="rounded-3xl bg-white p-6 shadow-sm sm:p-8"
+                x-data="{ rentalType: @js(old('rental_type', 'day')), redeemPoints: {{ (int) old('redeem_points', 0) }}, pointsBalance: {{ (int) auth()->user()->loyalty_points }}, redemptionRate: {{ (float) config('loyalty.redemption_rate') }} }"
+            >
                 <div class="flex flex-col gap-2">
                     <h3 class="font-display text-lg font-semibold text-ink">Request This Combo</h3>
                     <p class="font-body text-sm text-slate">Combo rentals are walk-in pickup only. Delivery is not available for packages.</p>
@@ -182,6 +191,29 @@
                             <x-input-error class="mt-2" :messages="$errors->get('end_date')" />
                         </div>
                     </div>
+
+                    @if (auth()->user()->loyalty_points > 0)
+                        <div class="rounded-2xl border border-indigo-200 bg-indigo-50 p-4">
+                            <div class="flex items-center justify-between">
+                                <label for="redeem_points" class="font-body text-sm font-medium text-gray-700">Redeem Points</label>
+                                <span class="font-body text-xs text-gray-500">Balance: <span class="font-semibold text-indigo-700">{{ number_format(auth()->user()->loyalty_points) }}</span> pts</span>
+                            </div>
+                            <input
+                                id="redeem_points"
+                                name="redeem_points"
+                                type="number"
+                                min="0"
+                                :max="pointsBalance"
+                                x-model.number="redeemPoints"
+                                @input="if (redeemPoints > pointsBalance) redeemPoints = pointsBalance; if (redeemPoints < 0 || isNaN(redeemPoints)) redeemPoints = 0;"
+                                class="mt-2 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                            <p class="mt-2 font-body text-sm text-indigo-700" x-show="redeemPoints > 0">
+                                Redeem <span x-text="redeemPoints"></span> points for RM<span x-text="(redeemPoints * redemptionRate).toFixed(2)"></span> off.
+                            </p>
+                            <x-input-error class="mt-2" :messages="$errors->get('redeem_points')" />
+                        </div>
+                    @endif
 
                     <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                         <label class="inline-flex items-start gap-3 font-body text-sm text-gray-700">

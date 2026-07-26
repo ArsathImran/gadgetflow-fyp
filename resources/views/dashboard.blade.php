@@ -196,7 +196,7 @@
                     </div>
                 </div>
             @else
-                <div class="grid gap-6 md:grid-cols-3">
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
                         <p class="font-body text-sm font-medium text-slate">Active Rentals</p>
                         <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $activeRentalsCount }}</p>
@@ -209,6 +209,11 @@
                         <p class="font-body text-sm font-medium text-emerald-700">Total Spent</p>
                         <p class="mt-4 font-display text-5xl font-bold text-emerald-900">{{ number_format((float) $totalSpent, 2) }}</p>
                     </div>
+                    <a href="{{ route('customer.rewards.index') }}" class="rounded-3xl border border-indigo-200 bg-indigo-50 p-6 shadow-[0_18px_40px_rgba(79,70,229,0.10)] transition hover:border-indigo-300">
+                        <p class="font-body text-sm font-medium text-indigo-700">Loyalty Points</p>
+                        <p class="mt-4 font-display text-5xl font-bold text-indigo-900">{{ number_format($user->loyalty_points) }}</p>
+                        <p class="mt-2 font-body text-xs font-semibold uppercase tracking-wide text-indigo-700">{{ ucfirst($user->currentTier()) }} Tier</p>
+                    </a>
                 </div>
 
                 <div class="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.9fr)]">

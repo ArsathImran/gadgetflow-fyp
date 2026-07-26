@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Bundle;
 use App\Models\Gadget;
+use App\Models\LoyaltyTransaction;
 use App\Models\Rental;
+use App\Models\User;
 use App\Notifications\PaymentRejected;
 use App\Notifications\PaymentVerified;
 use App\Notifications\RentalApproved;
@@ -15,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class RentalController extends Controller
@@ -25,7 +28,7 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isCustomer(), 403);
 
         $rentals = Rental::query()
-            ->with(['gadget.category', 'bundle', 'collectedByAdmin', 'review'])
+            ->with(['gadget.category', 'bundle', 'collectedByAdmin', 'review', 'loyaltyTransactions'])
             ->where('user_id', auth()->id())
             ->latest()
             ->paginate(10);
@@ -60,6 +63,7 @@ class RentalController extends Controller
             'phone_number' => ['nullable', 'string', 'max:30', 'required_if:pickup_type,delivery'],
             'ic_number' => ['nullable', 'string', 'max:50', 'required_if:pickup_type,delivery'],
             'agreement_accepted' => ['accepted'],
+            'redeem_points' => ['nullable', 'integer', 'min:0'],
         ]);
 
         if (! empty($validated['gadget_id']) && ! empty($validated['bundle_id'])) {
@@ -86,30 +90,62 @@ class RentalController extends Controller
 
         $rentalDates = $this->resolveRentalDates($validated);
         $qrToken = $this->generateUniqueQrToken();
+        $requestedRedeemPoints = (int) ($validated['redeem_points'] ?? 0);
 
-        Rental::create([
-            'user_id' => auth()->id(),
-            'gadget_id' => $gadget?->id,
-            'bundle_id' => $bundle?->id,
-            'qr_token' => $qrToken,
-            'rental_type' => $validated['rental_type'],
-            'rental_hours' => $validated['rental_type'] === 'hour' ? (int) $validated['rental_hours'] : null,
-            'pickup_type' => $pickupType,
-            'delivery_address' => $pickupType === 'delivery' ? $validated['delivery_address'] : null,
-            'phone_number' => $pickupType === 'delivery' ? $validated['phone_number'] : null,
-            'ic_number' => $pickupType === 'delivery' ? $validated['ic_number'] : null,
-            'agreement_accepted' => true,
-            'payment_proof' => null,
-            'payment_proofs' => null,
-            'payment_note' => null,
-            'payment_status' => 'not_required',
-            'shipping_status' => 'not_applicable',
-            'start_date' => $rentalDates['start_date'],
-            'end_date' => $rentalDates['end_date'],
-            'total_amount' => $totalAmount,
-            'deposit_amount' => $bundle?->deposit_amount ?? $gadget?->deposit_amount ?? 0,
-            'status' => 'pending',
-        ]);
+        DB::transaction(function () use ($gadget, $bundle, $qrToken, $validated, $pickupType, $rentalDates, $totalAmount, $requestedRedeemPoints) {
+            $pointsRedeemed = 0;
+            $discountAmount = 0;
+            $finalTotalAmount = $totalAmount;
+
+            if ($requestedRedeemPoints > 0) {
+                $user = User::query()->whereKey(auth()->id())->lockForUpdate()->firstOrFail();
+                $redemptionRate = (float) config('loyalty.redemption_rate');
+                $maxPointsByAmount = $redemptionRate > 0 ? (int) floor($totalAmount / $redemptionRate) : 0;
+                $pointsRedeemed = min($requestedRedeemPoints, $user->loyalty_points, $maxPointsByAmount);
+
+                if ($pointsRedeemed > 0) {
+                    $discountAmount = round($pointsRedeemed * $redemptionRate, 2);
+                    $finalTotalAmount = round($totalAmount - $discountAmount, 2);
+                    $user->decrement('loyalty_points', $pointsRedeemed);
+                }
+            }
+
+            $rental = Rental::create([
+                'user_id' => auth()->id(),
+                'gadget_id' => $gadget?->id,
+                'bundle_id' => $bundle?->id,
+                'qr_token' => $qrToken,
+                'rental_type' => $validated['rental_type'],
+                'rental_hours' => $validated['rental_type'] === 'hour' ? (int) $validated['rental_hours'] : null,
+                'pickup_type' => $pickupType,
+                'delivery_address' => $pickupType === 'delivery' ? $validated['delivery_address'] : null,
+                'phone_number' => $pickupType === 'delivery' ? $validated['phone_number'] : null,
+                'ic_number' => $pickupType === 'delivery' ? $validated['ic_number'] : null,
+                'agreement_accepted' => true,
+                'payment_proof' => null,
+                'payment_proofs' => null,
+                'payment_note' => null,
+                'payment_status' => 'not_required',
+                'shipping_status' => 'not_applicable',
+                'start_date' => $rentalDates['start_date'],
+                'end_date' => $rentalDates['end_date'],
+                'total_amount' => $finalTotalAmount,
+                'points_redeemed' => $pointsRedeemed,
+                'discount_amount' => $discountAmount,
+                'deposit_amount' => $bundle?->deposit_amount ?? $gadget?->deposit_amount ?? 0,
+                'status' => 'pending',
+            ]);
+
+            if ($pointsRedeemed > 0) {
+                LoyaltyTransaction::create([
+                    'user_id' => auth()->id(),
+                    'rental_id' => $rental->id,
+                    'type' => 'redeemed',
+                    'points' => -$pointsRedeemed,
+                    'description' => "Redeemed for rental #{$rental->id}",
+                ]);
+            }
+        });
 
         return redirect()
             ->route('customer.rentals.index')
@@ -198,9 +234,24 @@ class RentalController extends Controller
                 ->with('error', 'Only pending rental requests can be cancelled.');
         }
 
-        $rental->update([
-            'status' => 'cancelled_by_customer',
-        ]);
+        DB::transaction(function () use ($rental) {
+            $rental->update([
+                'status' => 'cancelled_by_customer',
+            ]);
+
+            if ($rental->points_redeemed > 0) {
+                $user = User::query()->whereKey($rental->user_id)->lockForUpdate()->firstOrFail();
+                $user->increment('loyalty_points', $rental->points_redeemed);
+
+                LoyaltyTransaction::create([
+                    'user_id' => $rental->user_id,
+                    'rental_id' => $rental->id,
+                    'type' => 'refunded',
+                    'points' => $rental->points_redeemed,
+                    'description' => "Refunded - rental request #{$rental->id} cancelled by customer",
+                ]);
+            }
+        });
 
         return redirect()
             ->route('customer.rentals.index')
@@ -234,7 +285,7 @@ class RentalController extends Controller
         abort_unless(auth()->user()->isCustomer(), 403);
         abort_unless($rental->user_id === auth()->id(), 403);
 
-        $rental->load(['gadget.category', 'bundle', 'collectedByAdmin', 'review']);
+        $rental->load(['gadget.category', 'bundle', 'collectedByAdmin', 'review', 'loyaltyTransactions']);
 
         return view('customer.rentals.show', compact('rental'));
     }
@@ -336,7 +387,9 @@ class RentalController extends Controller
             $rental->update([
                 'status' => 'approved',
                 'payment_status' => $rental->pickup_type === 'delivery' ? 'pending' : 'pending_collection',
-                'shipping_status' => $rental->pickup_type === 'delivery' ? 'not_applicable' : 'not_applicable',
+                // shipping_status stays not_applicable here even for delivery orders; it moves to
+                // waiting_for_shipping once verifyPayment() confirms the delivery payment proof.
+                'shipping_status' => 'not_applicable',
             ]);
         });
 
@@ -354,7 +407,22 @@ class RentalController extends Controller
             return back()->with('error', 'Only pending rental requests can be rejected.');
         }
 
-        $rental->update(['status' => 'rejected']);
+        DB::transaction(function () use ($rental) {
+            $rental->update(['status' => 'rejected']);
+
+            if ($rental->points_redeemed > 0) {
+                $user = User::query()->whereKey($rental->user_id)->lockForUpdate()->firstOrFail();
+                $user->increment('loyalty_points', $rental->points_redeemed);
+
+                LoyaltyTransaction::create([
+                    'user_id' => $rental->user_id,
+                    'rental_id' => $rental->id,
+                    'type' => 'refunded',
+                    'points' => $rental->points_redeemed,
+                    'description' => "Refunded - rental request #{$rental->id} rejected",
+                ]);
+            }
+        });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new RentalRejected($rental));
@@ -395,6 +463,11 @@ class RentalController extends Controller
             abort(422, 'Only approved rentals can be marked as returned.');
         }
 
+        // Refunds are based on what was actually collected (deposit_amount_received), falling back
+        // to the theoretical deposit_amount for walk-in/older rentals that never went through the
+        // partial-payment verification flow.
+        $depositAmount = (float) ($rental->deposit_amount_received ?? $rental->deposit_amount ?? 0);
+
         $validated = $request->validate([
             'condition_on_return' => ['required', 'in:good,damaged,missing_parts'],
             'return_notes' => ['nullable', 'string'],
@@ -404,7 +477,7 @@ class RentalController extends Controller
                 'required_if:deposit_decision,partial_refund',
                 'numeric',
                 'min:0',
-                'max:' . (float) ($rental->deposit_amount ?? 0),
+                'max:' . $depositAmount,
             ],
             'deposit_deduction_reason' => [
                 'nullable',
@@ -414,7 +487,6 @@ class RentalController extends Controller
             'waive_late_fee' => ['nullable', 'boolean'],
         ]);
 
-        $depositAmount = (float) ($rental->deposit_amount ?? 0);
         $depositStatus = 'refunded';
         $depositRefundAmount = $depositAmount;
         $daysOverdue = $rental->daysOverdue();
@@ -461,6 +533,22 @@ class RentalController extends Controller
                 'late_fee_amount' => $lateFeeAmount,
                 'late_fee_waived' => $lateFeeWaived,
             ]);
+
+            $pointsEarned = (int) floor((float) $rental->total_amount * (float) config('loyalty.points_per_currency_unit'));
+
+            if ($pointsEarned > 0) {
+                $user = User::query()->whereKey($rental->user_id)->lockForUpdate()->firstOrFail();
+                $user->increment('loyalty_points', $pointsEarned);
+                $user->increment('lifetime_points', $pointsEarned);
+
+                LoyaltyTransaction::create([
+                    'user_id' => $rental->user_id,
+                    'rental_id' => $rental->id,
+                    'type' => 'earned',
+                    'points' => $pointsEarned,
+                    'description' => "Earned from completed rental #{$rental->id}",
+                ]);
+            }
         });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
@@ -481,7 +569,7 @@ class RentalController extends Controller
         return back()->with('success', 'Rental marked as returned successfully.');
     }
 
-    public function verifyPayment(Rental $rental)
+    public function verifyPayment(Request $request, Rental $rental)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
         $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
@@ -494,15 +582,51 @@ class RentalController extends Controller
             return back()->with('error', 'Only pending payment proofs can be verified.');
         }
 
+        $rentalPaidFull = $request->boolean('rental_paid_full');
+        $depositPaidFull = $request->boolean('deposit_paid_full');
+
+        $validated = $request->validate([
+            'rental_amount_received' => [
+                Rule::requiredIf(! $rentalPaidFull),
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:' . (float) $rental->total_amount,
+            ],
+            'deposit_amount_received' => [
+                Rule::requiredIf(! $depositPaidFull),
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:' . (float) ($rental->deposit_amount ?? 0),
+            ],
+            'shortfall_notes' => ['nullable', 'string'],
+        ]);
+
+        $rentalAmountReceived = $rentalPaidFull
+            ? (float) $rental->total_amount
+            : (float) $validated['rental_amount_received'];
+
+        $depositAmountReceived = $depositPaidFull
+            ? (float) ($rental->deposit_amount ?? 0)
+            : (float) $validated['deposit_amount_received'];
+
+        $paymentStatus = ($rentalPaidFull && $depositPaidFull) ? 'verified' : 'partially_verified';
+
         $rental->update([
-            'payment_status' => 'verified',
+            'payment_status' => $paymentStatus,
             'shipping_status' => 'waiting_for_shipping',
+            'rental_amount_received' => $rentalAmountReceived,
+            'deposit_amount_received' => $depositAmountReceived,
+            'payment_shortfall_notes' => $validated['shortfall_notes'] ?? null,
         ]);
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
         $rental->user->notify(new PaymentVerified($rental));
 
-        return back()->with('success', 'Payment verified successfully.');
+        return back()->with('success', $paymentStatus === 'verified'
+            ? 'Payment verified successfully.'
+            : 'Payment partially verified — shortfall recorded.');
     }
 
     public function rejectPayment(Rental $rental)
@@ -526,6 +650,30 @@ class RentalController extends Controller
         $rental->user->notify(new PaymentRejected($rental));
 
         return back()->with('success', 'Payment rejected successfully.');
+    }
+
+    public function updateShipping(Request $request, Rental $rental)
+    {
+        abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+        abort_unless($rental->pickup_type === 'delivery', 422, 'Only delivery orders have a shipping status to update.');
+
+        $validated = $request->validate([
+            'shipping_status' => ['required', 'in:waiting_for_shipping,shipped,out_for_delivery,delivered'],
+        ]);
+
+        $stages = ['waiting_for_shipping', 'shipped', 'out_for_delivery', 'delivered'];
+        $currentIndex = array_search($rental->shipping_status, $stages, true);
+        $requestedIndex = array_search($validated['shipping_status'], $stages, true);
+
+        if ($currentIndex !== false && $requestedIndex < $currentIndex) {
+            return back()->with('error', 'Shipping status cannot be moved backwards.');
+        }
+
+        $rental->update([
+            'shipping_status' => $validated['shipping_status'],
+        ]);
+
+        return back()->with('success', 'Shipping status updated successfully.');
     }
 
     private function calculateTotalAmount(Gadget $gadget, array $validated): float

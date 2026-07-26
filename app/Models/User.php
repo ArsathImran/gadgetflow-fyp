@@ -25,6 +25,8 @@ class User extends Authenticatable
         'password',
         'role',
         'is_blocked',
+        'loyalty_points',
+        'lifetime_points',
     ];
 
     /**
@@ -69,5 +71,26 @@ class User extends Authenticatable
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
+    }
+
+    public function currentTier(): string
+    {
+        $tiers = config('loyalty.tiers');
+
+        return match (true) {
+            $this->lifetime_points >= $tiers['gold'] => 'gold',
+            $this->lifetime_points >= $tiers['silver'] => 'silver',
+            default => 'bronze',
+        };
+    }
+
+    public function pointsValueInCurrency(int $points): float
+    {
+        return round($points * (float) config('loyalty.redemption_rate'), 2);
     }
 }

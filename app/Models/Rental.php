@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Rental extends Model
@@ -28,10 +29,15 @@ class Rental extends Model
         'payment_proofs',
         'payment_note',
         'payment_status',
+        'rental_amount_received',
+        'deposit_amount_received',
+        'payment_shortfall_notes',
         'shipping_status',
         'start_date',
         'end_date',
         'total_amount',
+        'points_redeemed',
+        'discount_amount',
         'status',
         'returned_at',
         'condition_on_return',
@@ -53,7 +59,10 @@ class Rental extends Model
             'agreement_accepted' => 'boolean',
             'payment_proofs' => 'array',
             'returned_at' => 'datetime',
+            'discount_amount' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'rental_amount_received' => 'decimal:2',
+            'deposit_amount_received' => 'decimal:2',
             'deposit_refund_amount' => 'decimal:2',
             'late_fee_amount' => 'decimal:2',
             'late_fee_waived' => 'boolean',
@@ -110,6 +119,11 @@ class Rental extends Model
     public function review(): HasOne
     {
         return $this->hasOne(Review::class);
+    }
+
+    public function loyaltyTransactions(): HasMany
+    {
+        return $this->hasMany(LoyaltyTransaction::class);
     }
 
     public function itemName(): string

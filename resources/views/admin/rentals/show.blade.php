@@ -30,11 +30,6 @@
                 @endif
 
                 @php
-                    $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
-                        ? 'Pending Collection'
-                        : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
-                            ? 'Collected'
-                            : ucwords(str_replace('_', ' ', $rental->payment_status)));
                     $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                     $daysOverdue = $rental->daysOverdue();
                     $calculatedLateFee = $daysOverdue * (float) ($rental->isBundle()
@@ -74,13 +69,7 @@
                                         }
                                     }}
                                 </span>
-                                <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
-                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
-                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
-                                    @else bg-gray-100 text-gray-800 @endif">
-                                    {{ $paymentLabel }}
-                                </span>
+                                <x-payment-status-badge :status="$rental->payment_status" :pickup-type="$rental->pickup_type" />
                             </div>
                         </div>
 
@@ -109,7 +98,7 @@
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Shipping</p>
-                                <p class="mt-2 font-body text-sm font-semibold text-ink">{{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}</p>
+                                <div class="mt-2"><x-shipping-status-badge :status="$rental->shipping_status" /></div>
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Returned At</p>
@@ -185,6 +174,55 @@
                     </div>
                 </section>
 
+                @if ($rental->payment_status === 'partially_verified')
+                    <section class="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+                        <p class="font-body text-xs font-semibold uppercase tracking-wider text-amber-700">Payment Shortfall</p>
+                        <p class="mt-2 font-body text-sm text-amber-900">This order was verified with less than the full rental fee and/or deposit collected.</p>
+
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-xl bg-white/80 p-4">
+                                <p class="font-body text-xs uppercase tracking-wide text-amber-700">Rental Fee Received</p>
+                                <div class="mt-1"><x-spec-chip>{{ number_format((float) ($rental->rental_amount_received ?? 0), 2) }} / {{ number_format($rental->total_amount, 2) }}</x-spec-chip></div>
+                            </div>
+                            <div class="rounded-xl bg-white/80 p-4">
+                                <p class="font-body text-xs uppercase tracking-wide text-amber-700">Deposit Received</p>
+                                <div class="mt-1"><x-spec-chip>{{ number_format((float) ($rental->deposit_amount_received ?? 0), 2) }} / {{ number_format((float) ($rental->deposit_amount ?? 0), 2) }}</x-spec-chip></div>
+                            </div>
+                            @if ($rental->payment_shortfall_notes)
+                                <div class="rounded-xl bg-white/80 p-4 sm:col-span-2">
+                                    <p class="font-body text-xs uppercase tracking-wide text-amber-700">Shortfall Notes</p>
+                                    <p class="mt-1 whitespace-pre-line font-body text-sm text-amber-950">{{ $rental->payment_shortfall_notes }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    </section>
+                @endif
+
+                @if ($rental->pickup_type === 'delivery')
+                    <section class="rounded-2xl border border-cyan-200 bg-cyan-50 p-6 shadow-sm">
+                        <p class="font-body text-xs font-semibold uppercase tracking-wider text-cyan-700">Shipping Status</p>
+                        <p class="mt-2 font-body text-sm text-cyan-900">Update the shipping progress for this delivery order.</p>
+                        <form method="POST" action="{{ route('admin.rentals.updateShipping', $rental) }}" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                            @csrf
+                            @method('PATCH')
+                            <div class="flex-1">
+                                <label for="shipping_status" class="mb-2 block font-body text-xs font-semibold uppercase tracking-wider text-cyan-800">
+                                    Shipping Stage
+                                </label>
+                                <select id="shipping_status" name="shipping_status" class="w-full rounded-md border border-cyan-200 px-3 py-2 font-body text-sm text-gray-700 focus:border-cyan-400 focus:ring-cyan-400" required>
+                                    <option value="waiting_for_shipping" @selected($rental->shipping_status === 'waiting_for_shipping')>Waiting for Shipping</option>
+                                    <option value="shipped" @selected($rental->shipping_status === 'shipped')>Shipped</option>
+                                    <option value="out_for_delivery" @selected($rental->shipping_status === 'out_for_delivery')>Out for Delivery</option>
+                                    <option value="delivered" @selected($rental->shipping_status === 'delivered')>Delivered</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="rounded-md border border-cyan-300 bg-white px-4 py-2 font-body text-sm font-semibold text-cyan-700 transition hover:bg-cyan-100">
+                                Update Shipping Status
+                            </button>
+                        </form>
+                    </section>
+                @endif
+
                 @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'pending_collection')
                     <section class="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm">
                         <p class="font-body text-xs font-semibold uppercase tracking-wider text-indigo-700">Walk-in Payment</p>
@@ -196,6 +234,22 @@
                                 Mark Payment Collected
                             </button>
                         </form>
+                    </section>
+                @endif
+
+                @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'collected' && $rental->payment_collected_at)
+                    <section class="rounded-2xl border border-green-200 bg-green-50 p-6 shadow-sm">
+                        <p class="font-body text-xs font-semibold uppercase tracking-wider text-green-700">Walk-in Payment</p>
+                        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div class="rounded-xl bg-white/80 p-4">
+                                <p class="font-body text-xs uppercase tracking-wide text-green-700">Collected At</p>
+                                <p class="mt-1 font-mono text-sm font-semibold text-green-950">{{ $rental->payment_collected_at->format('Y-m-d H:i') }}</p>
+                            </div>
+                            <div class="rounded-xl bg-white/80 p-4">
+                                <p class="font-body text-xs uppercase tracking-wide text-green-700">Collected By</p>
+                                <p class="mt-1 font-body text-sm font-semibold text-green-950">{{ $rental->collectedByAdmin?->name ?? '-' }}</p>
+                            </div>
+                        </div>
                     </section>
                 @endif
 

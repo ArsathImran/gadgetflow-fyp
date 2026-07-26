@@ -36,27 +36,14 @@
                                 <thead class="bg-cloud">
                                     <tr>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Rental Item</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Type</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Pickup</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Dates / Hours</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Payment</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Shipping</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Total</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Deposit</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Status</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Returned At</th>
                                         <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @foreach ($rentals as $rental)
-                                        @php
-                                            $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
-                                                ? 'Pending Collection'
-                                                : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
-                                                    ? 'Payment Collected'
-                                                    : ucwords(str_replace('_', ' ', $rental->payment_status)));
-                                        @endphp
                                         <tr>
                                             <td class="px-6 py-4">
                                                 <div class="flex flex-wrap items-center gap-2">
@@ -70,51 +57,25 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                {{ ucfirst($rental->rental_type) }}
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
                                                 {{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                @if ($rental->rental_type === 'hour')
-                                                    {{ $rental->rental_hours }} hour(s)
-                                                @else
-                                                    {{ $rental->start_date }} to {{ $rental->end_date }}
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">
-                                                <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
-                                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
-                                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
-                                                    @else bg-gray-100 text-gray-800 @endif">
-                                                    {{ $paymentLabel }}
-                                                </span>
-                                                @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
-                                                    <div class="mt-3">
-                                                        <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo px-3 py-2 text-sm font-body font-semibold text-white transition hover:bg-indigo-500">
-                                                            Pay Now
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <x-spec-chip>{{ number_format($rental->total_amount, 2) }}</x-spec-chip>
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">
-                                                <x-spec-chip>{{ number_format((float) ($rental->deposit_amount ?? 0), 2) }}</x-spec-chip>
-                                                <div class="mt-2">
-                                                    <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
-                                                        @if ($rental->deposit_status === 'refunded') bg-green-100 text-green-800
-                                                        @elseif ($rental->deposit_status === 'partially_refunded') bg-yellow-100 text-yellow-800
-                                                        @elseif ($rental->deposit_status === 'deducted') bg-red-100 text-red-800
-                                                        @else bg-gray-100 text-gray-800 @endif">
-                                                        {{ ucwords(str_replace('_', ' ', $rental->deposit_status ?? 'held')) }}
-                                                    </span>
-                                                </div>
+                                                @if ($rental->points_redeemed > 0)
+                                                    <div class="mt-2 font-body text-xs text-indigo-700">
+                                                        -{{ number_format($rental->points_redeemed) }} pts ({{ number_format((float) $rental->discount_amount, 2) }} off)
+                                                    </div>
+                                                @endif
+                                                @if ($rental->status === 'completed')
+                                                    @php
+                                                        $earnedTransaction = $rental->loyaltyTransactions->firstWhere('type', 'earned');
+                                                    @endphp
+                                                    @if ($earnedTransaction)
+                                                        <div class="mt-2 font-body text-xs font-semibold text-green-700">
+                                                            +{{ number_format($earnedTransaction->points) }} points earned
+                                                        </div>
+                                                    @endif
+                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
@@ -148,20 +109,17 @@
                                                     </div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                @if ($rental->returned_at)
-                                                    <div>{{ $rental->returned_at->format('Y-m-d H:i') }}</div>
-                                                    <div class="mt-1 text-xs text-slate-500">
-                                                        {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '')) }}
-                                                    </div>
-                                                @else
-                                                    -
-                                                @endif
-                                            </td>
                                             <td class="px-6 py-4 text-right text-sm font-medium">
-                                                <a href="{{ route('customer.rentals.show', $rental) }}" class="inline-flex items-center rounded-md border border-indigo-200 bg-white px-3 py-2 text-sm font-body font-semibold text-indigo-700 transition hover:bg-indigo-50">
-                                                    View
-                                                </a>
+                                                <div class="inline-flex flex-col items-end gap-2">
+                                                    @if ($rental->status === 'approved' && $rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
+                                                        <a href="{{ route('customer.rentals.payment.create', $rental) }}" class="inline-flex items-center rounded-md bg-indigo px-3 py-2 text-sm font-body font-semibold text-white transition hover:bg-indigo-500">
+                                                            Pay Now
+                                                        </a>
+                                                    @endif
+                                                    <a href="{{ route('customer.rentals.show', $rental) }}" class="inline-flex items-center rounded-md border border-indigo-200 bg-white px-3 py-2 text-sm font-body font-semibold text-indigo-700 transition hover:bg-indigo-50">
+                                                        View
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     @endforeach

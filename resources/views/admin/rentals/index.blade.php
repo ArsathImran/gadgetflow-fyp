@@ -32,15 +32,9 @@
                                 <thead class="bg-cloud">
                                     <tr>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Customer</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Contact</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Rental Item</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Pickup</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Rental</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Dates / Hours</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Total</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Payment</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Shipping</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Proof</th>
                                         <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Status</th>
                                         <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate">Actions</th>
                                     </tr>
@@ -48,21 +42,13 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @foreach ($rentals as $rental)
                                         @php
-                                            $paymentLabel = $rental->payment_status === 'pending_collection' && $rental->pickup_type === 'walk_in'
-                                                ? 'Pending Collection'
-                                                : ($rental->payment_status === 'collected' && $rental->pickup_type === 'walk_in'
-                                                    ? 'Collected'
-                                                    : ucwords(str_replace('_', ' ', $rental->payment_status)));
                                             $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                                             $daysOverdue = $rental->daysOverdue();
                                         @endphp
                                         <tr id="rental-{{ $rental->id }}">
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                {{ $rental->user?->name ?? '-' }}
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                <div>{{ $rental->phone_number ?? '-' }}</div>
-                                                <div class="text-slate-500">{{ $rental->ic_number ?? '-' }}</div>
+                                                <div class="font-medium text-ink">{{ $rental->user?->name ?? '-' }}</div>
+                                                <div class="text-xs text-slate-500">{{ $rental->phone_number ?? '-' }}</div>
                                             </td>
                                             <td class="px-6 py-4">
                                                 <div class="flex flex-wrap items-center gap-2">
@@ -77,54 +63,9 @@
                                             </td>
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
                                                 {{ $rental->pickup_type === 'delivery' ? 'Delivery' : 'Walk-in' }}
-                                                @if ($rental->pickup_type === 'delivery')
-                                                    <div class="mt-1 max-w-xs whitespace-pre-line text-slate-500">{{ $rental->delivery_address ?? '-' }}</div>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                {{ ucfirst($rental->rental_type) }}
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                @if ($rental->rental_type === 'hour')
-                                                    {{ $rental->rental_hours }} hour(s)
-                                                @else
-                                                    {{ $rental->start_date }} to {{ $rental->end_date }}
-                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <x-spec-chip>{{ number_format($rental->total_amount, 2) }}</x-spec-chip>
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
-                                                    @if ($rental->payment_status === 'verified' || $rental->payment_status === 'collected') bg-green-100 text-green-800
-                                                    @elseif ($rental->payment_status === 'rejected') bg-red-100 text-red-800
-                                                    @elseif ($rental->payment_status === 'pending' || $rental->payment_status === 'pending_collection') bg-yellow-100 text-yellow-800
-                                                    @else bg-gray-100 text-gray-800 @endif">
-                                                    {{ $paymentLabel }}
-                                                </span>
-                                                @if ($rental->payment_status === 'collected' && $rental->payment_collected_at)
-                                                    <div class="mt-2 text-xs text-slate-500">
-                                                        Collected: {{ $rental->payment_collected_at->format('Y-m-d H:i') }}
-                                                    </div>
-                                                    <div class="mt-1 text-xs text-slate-500">
-                                                        By: {{ $rental->collectedByAdmin?->name ?? '-' }}
-                                                    </div>
-                                                @endif
-                                                <div class="mt-2 max-w-xs whitespace-pre-line text-xs text-slate-500">
-                                                    {{ $rental->payment_note ?: '-' }}
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                {{ ucwords(str_replace('_', ' ', $rental->shipping_status)) }}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">
-                                                @if (count($paymentProofs))
-                                                    <a href="{{ route('admin.rentals.show', $rental) }}" class="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-3 py-2 font-body text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100">
-                                                        View Proof ({{ count($paymentProofs) }})
-                                                    </a>
-                                                @else
-                                                    <span class="font-body text-slate-400">-</span>
-                                                @endif
                                             </td>
                                             <td class="px-6 py-4 text-sm">
                                                 <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold
@@ -179,13 +120,14 @@
 
                                                     @if ($rental->pickup_type === 'delivery' && $rental->payment_status === 'pending')
                                                         @if (count($paymentProofs))
-                                                            <form method="POST" action="{{ route('admin.rentals.payment.verify', $rental) }}">
-                                                                @csrf
-                                                                @method('PATCH')
-                                                                <button type="submit" class="rounded-md border border-indigo-300 px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50">
-                                                                    Verify Payment
-                                                                </button>
-                                                            </form>
+                                                            <button
+                                                                type="button"
+                                                                x-data
+                                                                x-on:click="$dispatch('open-modal', 'verify-payment-{{ $rental->id }}')"
+                                                                class="rounded-md border border-indigo-300 px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50"
+                                                            >
+                                                                Verify Payment
+                                                            </button>
 
                                                             <form method="POST" action="{{ route('admin.rentals.payment.reject', $rental) }}">
                                                                 @csrf
@@ -228,4 +170,114 @@
             </div>
         </div>
     </div>
+
+    @foreach ($rentals as $rental)
+        @php
+            $modalPaymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
+        @endphp
+        @if ($rental->pickup_type === 'delivery' && $rental->payment_status === 'pending' && count($modalPaymentProofs))
+            <x-modal name="verify-payment-{{ $rental->id }}" maxWidth="lg">
+                <div
+                    class="p-6"
+                    x-data="{
+                        rentalPaidFull: true,
+                        depositPaidFull: true,
+                        rentalAmountReceived: '',
+                        depositAmountReceived: '',
+                        totalAmount: {{ (float) $rental->total_amount }},
+                        depositAmount: {{ (float) ($rental->deposit_amount ?? 0) }},
+                        get rentalShortfall() {
+                            const received = parseFloat(this.rentalAmountReceived);
+                            return isNaN(received) ? 0 : Math.max(0, this.totalAmount - received);
+                        },
+                        get depositShortfall() {
+                            const received = parseFloat(this.depositAmountReceived);
+                            return isNaN(received) ? 0 : Math.max(0, this.depositAmount - received);
+                        },
+                    }"
+                >
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <h3 class="font-display text-lg font-semibold text-ink">Verify Payment</h3>
+                            <p class="mt-1 font-body text-sm text-slate">Confirm how much of the rental fee and deposit were received for this order.</p>
+                        </div>
+                        <button type="button" x-on:click="$dispatch('close-modal', 'verify-payment-{{ $rental->id }}')" class="rounded-md p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600">
+                            <span class="sr-only">Close</span>
+                            &times;
+                        </button>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.rentals.payment.verify', $rental) }}" class="mt-6 space-y-5">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="rounded-2xl border border-gray-200 p-4">
+                            <label class="inline-flex items-start gap-3 font-body text-sm text-gray-700">
+                                <input type="checkbox" name="rental_paid_full" value="1" x-model="rentalPaidFull" class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span>Rental fee received in full (RM {{ number_format($rental->total_amount, 2) }})</span>
+                            </label>
+                            <div class="mt-3" x-show="! rentalPaidFull" x-cloak>
+                                <label class="block font-body text-xs font-medium text-gray-700">Amount Received (RM)</label>
+                                <input
+                                    type="number"
+                                    name="rental_amount_received"
+                                    step="0.01"
+                                    min="0"
+                                    max="{{ (float) $rental->total_amount }}"
+                                    x-model.number="rentalAmountReceived"
+                                    class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="0.00"
+                                >
+                                <p class="mt-1 font-mono text-xs font-semibold text-amber-700" x-show="rentalShortfall > 0">
+                                    RM <span x-text="rentalShortfall.toFixed(2)"></span> short
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-200 p-4">
+                            <label class="inline-flex items-start gap-3 font-body text-sm text-gray-700">
+                                <input type="checkbox" name="deposit_paid_full" value="1" x-model="depositPaidFull" class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span>Deposit received in full (RM {{ number_format((float) ($rental->deposit_amount ?? 0), 2) }})</span>
+                            </label>
+                            <div class="mt-3" x-show="! depositPaidFull" x-cloak>
+                                <label class="block font-body text-xs font-medium text-gray-700">Amount Received (RM)</label>
+                                <input
+                                    type="number"
+                                    name="deposit_amount_received"
+                                    step="0.01"
+                                    min="0"
+                                    max="{{ (float) ($rental->deposit_amount ?? 0) }}"
+                                    x-model.number="depositAmountReceived"
+                                    class="mt-1 block w-full rounded-md border-gray-300 font-mono shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="0.00"
+                                >
+                                <p class="mt-1 font-mono text-xs font-semibold text-amber-700" x-show="depositShortfall > 0">
+                                    RM <span x-text="depositShortfall.toFixed(2)"></span> short
+                                </p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-body text-xs font-medium text-gray-700">Notes (optional)</label>
+                            <textarea
+                                name="shortfall_notes"
+                                rows="3"
+                                class="mt-1 block w-full rounded-md border-gray-300 font-body shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                placeholder="Explain the shortfall or any payment arrangement."
+                            ></textarea>
+                        </div>
+
+                        <div class="flex justify-end gap-3">
+                            <button type="button" x-on:click="$dispatch('close-modal', 'verify-payment-{{ $rental->id }}')" class="rounded-md border border-gray-300 bg-white px-4 py-2 font-body text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
+                                Cancel
+                            </button>
+                            <button type="submit" class="rounded-md bg-indigo px-4 py-2 font-body text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500">
+                                Confirm Verification
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </x-modal>
+        @endif
+    @endforeach
 </x-app-layout>
