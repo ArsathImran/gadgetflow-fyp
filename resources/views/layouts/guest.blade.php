@@ -15,6 +15,10 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon-32.png') }}">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=manrope:400,500,600,700,800&display=swap" rel="stylesheet" />
 
@@ -39,7 +43,7 @@
                         <div class="relative mx-auto flex min-h-full w-full max-w-md flex-col justify-center">
                             <a href="/" class="inline-flex items-center gap-3 text-white transition duration-300 hover:opacity-90">
                                 <span class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-blue-950/30">
-                                    <x-application-logo class="h-7 w-7 fill-current text-white" />
+                                    <x-application-logo class="h-7 w-7" />
                                 </span>
                                 <span>
                                     <span class="block text-lg font-semibold tracking-[0.18em] text-blue-200/80">{{ $panelTitle }}</span>

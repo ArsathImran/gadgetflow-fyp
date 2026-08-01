@@ -110,16 +110,34 @@
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Phone</p>
                                 <p class="mt-2 font-mono text-sm font-semibold text-ink">{{ $rental->phone_number ?? '-' }}</p>
                             </div>
-                            <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
-                                <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">IC Number</p>
-                                <p class="mt-2 font-mono text-sm font-semibold text-ink">{{ $rental->ic_number ?? '-' }}</p>
-                            </div>
                         </div>
 
                         @if ($rental->pickup_type === 'delivery')
-                            <div class="mt-6 rounded-2xl border border-gray-200 bg-cloud p-4">
-                                <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Delivery Address</p>
-                                <p class="mt-2 whitespace-pre-line font-body text-sm text-gray-700">{{ $rental->delivery_address ?? '-' }}</p>
+                            <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                                <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
+                                    <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Delivery Address</p>
+                                    <p class="mt-2 whitespace-pre-line font-body text-sm text-gray-700">{{ $rental->delivery_address ?? '-' }}</p>
+                                </div>
+                                <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
+                                    <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">ID Document</p>
+                                    <div class="mt-2">
+                                        @if ($rental->user?->id_document_path)
+                                            <a
+                                                href="{{ asset('storage/' . $rental->user->id_document_path) }}"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="inline-flex items-center gap-1.5 font-body text-sm font-semibold text-indigo transition hover:text-indigo-700"
+                                            >
+                                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.5h6M9 15.5h6M9 9.5h2M7 20.5h10a2 2 0 0 0 2-2v-11l-5-4H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                                                </svg>
+                                                View ID Document
+                                            </a>
+                                        @else
+                                            <p class="font-body text-sm font-semibold text-ink">No document on file</p>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
                         @endif
                     </div>

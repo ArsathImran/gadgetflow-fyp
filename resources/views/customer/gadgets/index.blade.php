@@ -10,12 +10,9 @@
         </div>
     </x-slot>
 
-    @php
-        $featuredGadget = $gadgets->firstWhere('image');
-    @endphp
-
-    <div class="py-12">
+    <div class="py-12 sm:py-16">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="relative">
             <div class="relative overflow-hidden rounded-3xl bg-ink shadow-[0_24px_60px_rgba(11,18,32,0.35)]">
                 <div class="absolute inset-y-0 right-0 hidden w-1/2 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.16),_transparent_45%),linear-gradient(180deg,rgba(79,70,229,0.12),transparent)] lg:block"></div>
                 <div class="absolute -left-20 top-10 h-56 w-56 rounded-full bg-indigo/20 blur-3xl"></div>
@@ -133,11 +130,28 @@
                 </div>
             </div>
 
-            <div class="mt-6 rounded-2xl bg-white shadow-sm sm:rounded-2xl">
+                <div class="pointer-events-none absolute -bottom-7 left-6 z-10 hidden sm:block lg:left-12">
+                    <div class="pointer-events-auto inline-flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-[0_18px_40px_rgba(15,23,42,0.18)]">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo/10 text-indigo">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M12 3l7.5 3.409v5.291c0 4.756-3.163 8.686-7.5 9.795-4.337-1.109-7.5-5.039-7.5-9.795V6.409L12 3Z" />
+                            </svg>
+                        </span>
+                        <div>
+                            <p class="font-display text-sm font-semibold text-ink">Verified &amp; Insured</p>
+                            <p class="font-body text-xs text-slate">Admin-checked before every rental</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16 rounded-2xl bg-white shadow-sm sm:rounded-2xl sm:mt-20">
                 <div class="p-6 text-gray-900">
                     <form method="GET" action="{{ route('customer.gadgets.index') }}" class="grid gap-3 lg:grid-cols-12">
-                        <div class="lg:col-span-5">
+                        <div class="lg:col-span-4">
+                            <label for="filter-search" class="sr-only">Search gadgets</label>
                             <input
+                                id="filter-search"
                                 type="text"
                                 name="search"
                                 value="{{ request('search') }}"
@@ -146,8 +160,10 @@
                             >
                         </div>
 
-                        <div class="lg:col-span-4">
+                        <div class="lg:col-span-3">
+                            <label for="filter-category" class="sr-only">Category</label>
                             <select
+                                id="filter-category"
                                 name="category_id"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
@@ -160,7 +176,33 @@
                             </select>
                         </div>
 
-                        <div class="lg:col-span-3 flex flex-wrap gap-2">
+                        <div class="lg:col-span-3">
+                            <label for="filter-price" class="sr-only">Price range</label>
+                            <select
+                                id="filter-price"
+                                name="price_range"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option value="" @selected(request('price_range') === null || request('price_range') === '')>Any price</option>
+                                <option value="under_50" @selected(request('price_range') === 'under_50')>Under RM50/day</option>
+                                <option value="50_150" @selected(request('price_range') === '50_150')>RM50 - RM150/day</option>
+                                <option value="150_plus" @selected(request('price_range') === '150_plus')>RM150+/day</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <label for="filter-availability" class="sr-only">Availability</label>
+                            <select
+                                id="filter-availability"
+                                name="availability"
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            >
+                                <option value="in_stock" @selected(request('availability') !== 'any')>In stock only</option>
+                                <option value="any" @selected(request('availability') === 'any')>Any availability</option>
+                            </select>
+                        </div>
+
+                        <div class="lg:col-span-12 flex flex-wrap justify-end gap-2">
                             <button type="submit" class="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800">
                                 {{ __('Filter') }}
                             </button>
@@ -171,80 +213,37 @@
                         </div>
                     </form>
 
-                    <div class="mt-8">
-                        @if ($gadgets->count())
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-                                @foreach($gadgets as $gadget)
-                                    <a href="{{ route('customer.gadgets.show', $gadget) }}"
-                                       class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition overflow-hidden">
+                    @if ($gadgets->count())
+                        <div
+                            x-data="infiniteGrid({
+                                nextPageUrl: @js($gadgets->nextPageUrl()),
+                                loadedCount: {{ $gadgets->count() }},
+                                total: {{ $gadgets->total() }},
+                            })"
+                            class="mt-8"
+                        >
+                            <p class="mb-4 font-body text-sm text-slate" x-text="`Showing ${loadedCount} of ${total} results`"></p>
 
-                                        <div class="h-44 bg-cloud flex items-center justify-center overflow-hidden">
-                                            @if($gadget->image)
-                                                <img src="{{ asset('storage/' . $gadget->image) }}"
-                                                     alt="{{ $gadget->name }}"
-                                                     class="max-h-40 max-w-full object-contain group-hover:scale-105 transition duration-300">
-                                            @else
-                                                <span class="text-gray-400 text-sm font-body">No Image</span>
-                                            @endif
-                                        </div>
-
-                                        <div class="p-4">
-                                            @php
-                                                $averageRating = $gadget->averageRating();
-                                                $reviewsCount = $gadget->reviewsCount();
-                                            @endphp
-                                            <h3 class="font-display text-sm font-semibold text-ink truncate">
-                                                {{ $gadget->name }}
-                                            </h3>
-
-                                            @if ($gadget->brand || $gadget->model)
-                                                <p class="mt-1 font-body text-xs text-slate">
-                                                    {{ collect([$gadget->brand, $gadget->model])->filter()->implode(' ') }}
-                                                </p>
-                                            @endif
-
-                                            <p class="mt-1 font-body text-xs text-slate">
-                                                {{ $gadget->category->name ?? 'Uncategorized' }}
-                                            </p>
-
-                                            <div class="mt-2">
-                                                <x-spec-chip>
-                                                    RM{{ number_format($gadget->daily_rental_price, 0) }}/day &middot; {{ $gadget->quantity }} in stock
-                                                </x-spec-chip>
-                                            </div>
-
-                                            <div class="mt-3 flex items-center gap-2 text-xs">
-                                                @if ($averageRating)
-                                                    <span class="text-amber-500">
-                                                        @for ($star = 1; $star <= 5; $star++)
-                                                            <span class="{{ $star <= round($averageRating) ? 'text-amber-500' : 'text-amber-200' }}">&#9733;</span>
-                                                        @endfor
-                                                    </span>
-                                                    <span class="font-mono font-medium text-gray-700">{{ number_format($averageRating, 1) }}</span>
-                                                    <span class="font-mono text-gray-500">({{ $reviewsCount }})</span>
-                                                @else
-                                                    <span class="font-body text-gray-400">No reviews yet</span>
-                                                @endif
-                                            </div>
-
-                                            <div class="mt-4 inline-flex w-full items-center justify-center rounded-lg bg-indigo px-3 py-2 text-sm font-body font-semibold text-white transition hover:bg-indigo-500">
-                                                View Product
-                                            </div>
-                                        </div>
-                                    </a>
-                                @endforeach
+                            <div x-ref="grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                                @include('customer.gadgets._grid-items')
                             </div>
-                        @else
-                            <div class="rounded-2xl border border-dashed border-gray-300 px-6 py-12 text-center">
-                                <p class="text-base font-semibold text-gray-900">No gadgets found.</p>
-                                <p class="mt-2 text-sm text-gray-500">Try a different search term or category filter.</p>
-                            </div>
-                        @endif
-                    </div>
 
-                    <div class="mt-8">
-                        {{ $gadgets->links() }}
-                    </div>
+                            <div x-ref="sentinel"></div>
+
+                            <div x-show="loading" x-cloak class="mt-8 flex justify-center">
+                                <span class="h-6 w-6 animate-spin rounded-full border-2 border-indigo border-t-transparent"></span>
+                            </div>
+
+                            <div x-show="!loading && !nextPageUrl" x-cloak class="mt-8 text-center font-body text-xs text-slate-400">
+                                You&rsquo;ve reached the end of the list.
+                            </div>
+                        </div>
+                    @else
+                        <div class="mt-8 rounded-2xl border border-dashed border-gray-300 px-6 py-12 text-center">
+                            <p class="text-base font-semibold text-gray-900">No gadgets found.</p>
+                            <p class="mt-2 text-sm text-gray-500">Try a different search term or filter combination.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

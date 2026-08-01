@@ -22,16 +22,18 @@
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="overflow-hidden rounded-3xl bg-white shadow-sm">
-                <div class="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
-                    <div class="bg-gray-100">
+                <div class="grid gap-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+                    <div class="bg-gray-100 p-6 sm:p-8">
                         @if ($gadget->image)
-                            <img
-                                src="{{ asset('storage/' . $gadget->image) }}"
-                                alt="{{ $gadget->name }}"
-                                class="h-full min-h-[320px] w-full object-cover"
-                            >
+                            <div class="aspect-square w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+                                <img
+                                    src="{{ asset('storage/' . $gadget->image) }}"
+                                    alt="{{ $gadget->name }}"
+                                    class="h-full w-full object-cover"
+                                >
+                            </div>
                         @else
-                            <div class="flex min-h-[320px] items-center justify-center text-sm text-gray-400">
+                            <div class="flex aspect-square w-full max-w-sm items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white text-sm text-gray-400">
                                 No image available
                             </div>
                         @endif
@@ -44,7 +46,7 @@
                             </div>
                         @endif
 
-                        <form method="POST" action="{{ route('customer.rentals.store') }}" class="space-y-6" id="rental-form">
+                        <form method="POST" action="{{ route('customer.rentals.store') }}" enctype="multipart/form-data" class="space-y-6" id="rental-form">
                             @csrf
                             <input type="hidden" name="gadget_id" value="{{ $gadget->id }}">
 
@@ -200,17 +202,26 @@
                                     </div>
 
                                     <div>
-                                        <label for="ic_number" class="block text-sm font-medium text-gray-700">IC Number</label>
-                                        <input
-                                            id="ic_number"
-                                            name="ic_number"
-                                            type="text"
-                                            value="{{ old('ic_number') }}"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        >
-                                        @error('ic_number')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
+                                        @if (auth()->user()->id_document_path)
+                                            <label class="block text-sm font-medium text-gray-700">Supporting ID Document</label>
+                                            <p class="mt-1 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                                                Using your verified ID document on file (uploaded on {{ auth()->user()->id_document_uploaded_at?->format('M j, Y') }}).
+                                                <a href="{{ route('profile.edit') }}" class="font-semibold underline hover:text-emerald-800">Update it on your profile</a>
+                                            </p>
+                                        @else
+                                            <label for="id_document" class="block text-sm font-medium text-gray-700">Supporting ID Document</label>
+                                            <input
+                                                id="id_document"
+                                                name="id_document"
+                                                type="file"
+                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            >
+                                            <p class="mt-1 text-xs text-gray-500">This will be saved to your profile for future rentals.</p>
+                                            @error('id_document')
+                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                            @enderror
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -218,7 +229,7 @@
                             <div class="rounded-2xl bg-gray-50 p-4 text-sm text-gray-700">
                                 <p class="font-semibold text-gray-900">Agreement</p>
                                 <p class="mt-2">
-                                    If the product is missing or damaged, you must pay the required amount. Your IC details may be used for police report purposes if illegal activities occur.
+                                    If the product is missing or damaged, you must pay the required amount. Your ID document may be used for police report purposes if illegal activities occur.
                                 </p>
                                 <button type="button" id="open-agreement" class="mt-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50">
                                     View Agreement
@@ -264,7 +275,7 @@
             </div>
 
             <div class="mt-5 rounded-2xl bg-gray-50 p-4 text-sm leading-6 text-gray-700">
-                If the product is missing or damaged, you must pay the required amount. Your IC details may be used for police report purposes if illegal activities occur.
+                If the product is missing or damaged, you must pay the required amount. Your ID document may be used for police report purposes if illegal activities occur.
             </div>
 
             <div class="mt-6 flex justify-end">
@@ -287,7 +298,7 @@
             const deliveryFields = document.getElementById('delivery-fields');
             const deliveryAddress = document.getElementById('delivery_address');
             const phoneNumber = document.getElementById('phone_number');
-            const icNumber = document.getElementById('ic_number');
+            const idDocument = document.getElementById('id_document');
             const agreementCheckbox = document.getElementById('agreement_accepted');
             const submitButton = document.getElementById('submit-button');
             const modal = document.getElementById('agreement-modal');
@@ -311,7 +322,10 @@
                 endDate.required = ! isHour;
                 deliveryAddress.required = isDelivery;
                 phoneNumber.required = isDelivery;
-                icNumber.required = isDelivery;
+
+                if (idDocument) {
+                    idDocument.required = isDelivery;
+                }
             };
 
             const toggleSubmit = () => {

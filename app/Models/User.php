@@ -27,6 +27,13 @@ class User extends Authenticatable
         'is_blocked',
         'loyalty_points',
         'lifetime_points',
+        'phone',
+        'city',
+        'state',
+        'address',
+        'avatar_path',
+        'id_document_path',
+        'id_document_uploaded_at',
     ];
 
     /**
@@ -50,6 +57,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_blocked' => 'boolean',
+            'id_document_uploaded_at' => 'datetime',
         ];
     }
 

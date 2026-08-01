@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Gadget;
 use App\Models\Rental;
+use App\Models\Review;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -97,6 +98,40 @@ class DashboardController extends Controller
             'overdueRentalsCount' => $activeRentals
                 ->filter(fn (Rental $rental) => $rental->isOverdue())
                 ->count(),
+            'steps' => [
+                [
+                    'number' => '01',
+                    'icon' => 'search',
+                    'title' => 'Browse & Choose',
+                    'description' => 'Explore smartphones, laptops, cameras, and more to find the perfect gadget for your needs.',
+                ],
+                [
+                    'number' => '02',
+                    'icon' => 'calendar',
+                    'title' => 'Request Your Rental',
+                    'description' => 'Pick your dates, submit your details, and send a rental request in just a couple of clicks.',
+                ],
+                [
+                    'number' => '03',
+                    'icon' => 'card',
+                    'title' => 'Get Approved & Pay',
+                    'description' => 'Our admin team checks the request, then you settle payment securely to confirm the booking.',
+                ],
+                [
+                    'number' => '04',
+                    'icon' => 'qr',
+                    'title' => 'Pickup / Return via QR Scan',
+                    'description' => 'Show your unique QR code for a quick, verified handover and an equally smooth return.',
+                ],
+            ],
+            'testimonials' => Review::query()
+                ->with(['user', 'gadget', 'bundle'])
+                ->where('rating', '>=', 4)
+                ->whereNotNull('comment')
+                ->where('comment', '!=', '')
+                ->latest()
+                ->take(3)
+                ->get(),
         ]);
     }
 }

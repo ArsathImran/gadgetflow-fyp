@@ -25,18 +25,18 @@
     <div class="py-12">
         <div class="max-w-6xl mx-auto space-y-8 sm:px-6 lg:px-8">
             <div class="overflow-hidden rounded-3xl bg-white shadow-sm">
-                <div class="grid gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-                    <div class="bg-cloud" x-data="{ selectedImage: @js($initialImage ? asset('storage/' . $initialImage) : null) }">
+                <div class="grid gap-0 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+                    <div class="bg-cloud p-6 sm:p-8" x-data="{ selectedImage: @js($initialImage ? asset('storage/' . $initialImage) : null) }">
                         @if ($galleryImages->isNotEmpty())
-                            <div class="flex min-h-[320px] items-center justify-center overflow-hidden bg-white">
+                            <div class="aspect-square w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                                 <img
                                     :src="selectedImage"
                                     alt="{{ $bundle->name }}"
-                                    class="h-full min-h-[320px] w-full object-cover"
+                                    class="h-full w-full object-cover"
                                 >
                             </div>
 
-                            <div class="grid grid-cols-4 gap-3 border-t border-gray-200 bg-white p-4 sm:grid-cols-5">
+                            <div class="mt-4 grid max-w-sm grid-cols-4 gap-3 sm:grid-cols-5">
                                 @foreach ($galleryImages as $galleryImage)
                                     @php
                                         $galleryImageUrl = asset('storage/' . $galleryImage);
@@ -44,18 +44,19 @@
                                     <button
                                         type="button"
                                         @click="selectedImage = @js($galleryImageUrl)"
-                                        class="overflow-hidden rounded-2xl border border-gray-200 bg-cloud shadow-sm transition hover:border-indigo-300 hover:ring-2 hover:ring-indigo-100"
+                                        :class="selectedImage === @js($galleryImageUrl) ? 'border-indigo-500 ring-2 ring-indigo-200' : 'border-gray-200 hover:border-indigo-300 hover:ring-2 hover:ring-indigo-100'"
+                                        class="aspect-square overflow-hidden rounded-xl border bg-white transition"
                                     >
                                         <img
                                             src="{{ $galleryImageUrl }}"
                                             alt="{{ $bundle->name }} image {{ $loop->iteration }}"
-                                            class="h-20 w-full object-cover"
+                                            class="h-full w-full object-cover"
                                         >
                                     </button>
                                 @endforeach
                             </div>
                         @else
-                            <div class="flex min-h-[320px] items-center justify-center font-body text-sm text-gray-400">
+                            <div class="flex aspect-square w-full max-w-sm items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white font-body text-sm text-gray-400">
                                 No image available
                             </div>
                         @endif

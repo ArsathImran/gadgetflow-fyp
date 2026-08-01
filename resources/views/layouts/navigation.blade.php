@@ -3,8 +3,8 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <div class="shrink-0 flex items-center gap-2">
-                    <a href="{{ Auth::user()->isAdmin() ? route('dashboard') : route('customer.gadgets.index') }}" class="flex items-center gap-2">
-                        <x-application-logo class="block h-8 w-auto fill-current text-indigo" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                        <x-application-logo class="block h-8 w-auto" />
                         <span class="font-display text-lg font-semibold tracking-tight text-white">GadgetFlow</span>
                     </a>
                 </div>
@@ -56,23 +56,39 @@
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
+                <x-dropdown align="right" width="w-56">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-body font-medium rounded-md text-slate-200 bg-white/5 hover:bg-white/10 hover:text-white focus:outline-none transition ease-in-out duration-150">
-                            <div>{{ Auth::user()->name }}</div>
+                        <button class="inline-flex items-center gap-2.5 rounded-full border border-transparent bg-white/5 py-1.5 ps-1.5 pe-3 text-sm leading-4 font-body font-medium text-slate-200 transition ease-in-out duration-150 hover:bg-white/10 hover:text-white focus:outline-none">
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo font-display text-sm font-semibold text-white">
+                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                            </span>
+                            <span>{{ Auth::user()->name }}</span>
 
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
+                            <svg class="fill-current h-4 w-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
                         </button>
                     </x-slot>
 
                     <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
+                        @if (Auth::user()->isAdmin())
+                            <x-dropdown-link :href="route('dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+                        @else
+                            <x-dropdown-link :href="route('profile.edit')">
+                                {{ __('Profile') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('about')">
+                                {{ __('About Us') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('contact')">
+                                {{ __('Contact') }}
+                            </x-dropdown-link>
+                        @endif
 
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
@@ -141,13 +157,24 @@
                 <x-responsive-nav-link :href="route('customer.bundles.index', ['type' => 'short_film'])" :active="request()->routeIs('customer.bundles.*') && request('type') === 'short_film'">
                     {{ __('Short Film Combo') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('about')" :active="request()->routeIs('about')">
+                    {{ __('About Us') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('contact')" :active="request()->routeIs('contact')">
+                    {{ __('Contact') }}
+                </x-responsive-nav-link>
             @endif
         </div>
 
         <div class="pt-4 pb-1 border-t border-white/10">
-            <div class="px-4">
-                <div class="font-body font-medium text-base text-white">{{ Auth::user()->name }}</div>
-                <div class="font-body font-medium text-sm text-slate-400">{{ Auth::user()->email }}</div>
+            <div class="flex items-center gap-3 px-4">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo font-display text-base font-semibold text-white">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </span>
+                <div>
+                    <div class="font-body font-medium text-base text-white">{{ Auth::user()->name }}</div>
+                    <div class="font-body font-medium text-sm text-slate-400">{{ Auth::user()->email }}</div>
+                </div>
             </div>
 
             <div class="mt-3 space-y-1">

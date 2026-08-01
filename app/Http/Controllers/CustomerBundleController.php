@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bundle;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CustomerBundleController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         abort_unless(auth()->check(), 403);
         abort_unless(auth()->user()->isCustomer(), 403);
@@ -25,6 +26,15 @@ class CustomerBundleController extends Controller
             ->latest()
             ->paginate(9)
             ->withQueryString();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html' => view('customer.bundles._grid-items', compact('bundles'))->render(),
+                'next_page_url' => $bundles->nextPageUrl(),
+                'count' => $bundles->count(),
+                'total' => $bundles->total(),
+            ]);
+        }
 
         return view('customer.bundles.index', compact('bundles', 'type'));
     }

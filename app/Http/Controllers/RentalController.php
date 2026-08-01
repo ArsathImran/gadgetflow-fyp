@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class RentalController extends Controller
@@ -61,7 +62,7 @@ class RentalController extends Controller
             'pickup_type' => ['nullable', 'in:walk_in,delivery', 'required_without:bundle_id'],
             'delivery_address' => ['nullable', 'string', 'required_if:pickup_type,delivery'],
             'phone_number' => ['nullable', 'string', 'max:30', 'required_if:pickup_type,delivery'],
-            'ic_number' => ['nullable', 'string', 'max:50', 'required_if:pickup_type,delivery'],
+            'id_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:8192'],
             'agreement_accepted' => ['accepted'],
             'redeem_points' => ['nullable', 'integer', 'min:0'],
         ]);
@@ -82,6 +83,24 @@ class RentalController extends Controller
             $gadget = Gadget::query()->findOrFail($validated['gadget_id']);
             abort_unless($gadget->status === 'active' && $gadget->quantity > 0, 404);
             abort_unless(in_array($pickupType, ['walk_in', 'delivery'], true), 422);
+        }
+
+        if ($pickupType === 'delivery' && ! auth()->user()->id_document_path && ! $request->hasFile('id_document')) {
+            throw ValidationException::withMessages([
+                'id_document' => 'Please upload a supporting ID document to continue with a delivery order.',
+            ]);
+        }
+
+        if ($request->hasFile('id_document')) {
+            $user = auth()->user();
+
+            if ($user->id_document_path) {
+                Storage::disk('public')->delete($user->id_document_path);
+            }
+
+            $user->id_document_path = $request->file('id_document')->store('id-documents', 'public');
+            $user->id_document_uploaded_at = now();
+            $user->save();
         }
 
         $totalAmount = $bundle
@@ -120,7 +139,6 @@ class RentalController extends Controller
                 'pickup_type' => $pickupType,
                 'delivery_address' => $pickupType === 'delivery' ? $validated['delivery_address'] : null,
                 'phone_number' => $pickupType === 'delivery' ? $validated['phone_number'] : null,
-                'ic_number' => $pickupType === 'delivery' ? $validated['ic_number'] : null,
                 'agreement_accepted' => true,
                 'payment_proof' => null,
                 'payment_proofs' => null,

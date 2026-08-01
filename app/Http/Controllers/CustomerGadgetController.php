@@ -23,18 +23,45 @@ class CustomerGadgetController extends Controller
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')
             ->where('status', 'active')
-            ->where('quantity', '>', 0)
+            ->when($request->get('availability') !== 'any', function ($query) {
+                $query->where('quantity', '>', 0);
+            })
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->where('name', 'like', '%' . $request->string('search') . '%');
             })
             ->when($request->filled('category_id'), function ($query) use ($request) {
                 $query->where('category_id', $request->integer('category_id'));
             })
+            ->when($request->filled('price_range'), function ($query) use ($request) {
+                match ($request->string('price_range')->toString()) {
+                    'under_50' => $query->where('daily_rental_price', '<', 50),
+                    '50_150' => $query->whereBetween('daily_rental_price', [50, 150]),
+                    '150_plus' => $query->where('daily_rental_price', '>', 150),
+                    default => $query,
+                };
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString();
 
-        return view('customer.gadgets.index', compact('gadgets', 'categories'));
+        if ($request->wantsJson()) {
+            return response()->json([
+                'html' => view('customer.gadgets._grid-items', compact('gadgets'))->render(),
+                'next_page_url' => $gadgets->nextPageUrl(),
+                'count' => $gadgets->count(),
+                'total' => $gadgets->total(),
+            ]);
+        }
+
+        $featuredGadget = Gadget::query()
+            ->with('category')
+            ->where('status', 'active')
+            ->where('quantity', '>', 0)
+            ->whereNotNull('image')
+            ->latest()
+            ->first();
+
+        return view('customer.gadgets.index', compact('gadgets', 'categories', 'featuredGadget'));
     }
 
     public function show(Gadget $gadget)
