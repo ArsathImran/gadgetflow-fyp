@@ -44,21 +44,42 @@
                                         @php
                                             $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                                             $daysOverdue = $rental->daysOverdue();
+                                            $itemThumbnail = $rental->isBundle() ? $rental->bundle?->image : $rental->gadget?->image;
                                         @endphp
-                                        <tr id="rental-{{ $rental->id }}">
+                                        <tr id="rental-{{ $rental->id }}" class="transition hover:bg-slate-50">
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
-                                                <div class="font-medium text-ink">{{ $rental->user?->name ?? '-' }}</div>
-                                                <div class="text-xs text-slate-500">{{ $rental->phone_number ?? '-' }}</div>
+                                                <div class="flex items-center gap-3">
+                                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo font-display text-sm font-semibold text-white">
+                                                        {{ strtoupper(substr($rental->user?->name ?? '?', 0, 1)) }}
+                                                    </span>
+                                                    <div>
+                                                        <div class="font-medium text-ink">{{ $rental->user?->name ?? '-' }}</div>
+                                                        <div class="text-xs text-slate-500">{{ $rental->phone_number ?? '-' }}</div>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td class="px-6 py-4">
-                                                <div class="flex flex-wrap items-center gap-2">
-                                                    <div class="font-display font-semibold text-ink">{{ $rental->itemName() }}</div>
-                                                    <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
-                                                        {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
-                                                    </span>
-                                                </div>
-                                                <div class="font-body text-sm text-slate-500">
-                                                    {{ $rental->isBundle() ? ($rental->bundle?->type === 'wedding' ? 'Wedding Combo' : 'Short Film Combo') : ($rental->gadget?->category?->name ?? '-') }}
+                                                <div class="flex items-center gap-3">
+                                                    <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cloud ring-1 ring-slate-200">
+                                                        @if ($itemThumbnail)
+                                                            <img src="{{ asset('storage/' . $itemThumbnail) }}" alt="{{ $rental->itemName() }}" class="h-full w-full object-cover">
+                                                        @else
+                                                            <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 8.25 12 4l8.25 4.25M3.75 8.25v8.5L12 21l8.25-4.25v-8.5M3.75 8.25 12 12.5l8.25-4.25M12 12.5V21" />
+                                                            </svg>
+                                                        @endif
+                                                    </div>
+                                                    <div class="min-w-0">
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            <div class="font-display font-semibold text-ink">{{ $rental->itemName() }}</div>
+                                                            <span class="inline-flex rounded-full px-2.5 py-0.5 font-body text-xs font-semibold {{ $rental->isBundle() ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700' }}">
+                                                                {{ $rental->isBundle() ? 'Combo' : 'Gadget' }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="font-body text-sm text-slate-500">
+                                                            {{ $rental->isBundle() ? ($rental->bundle?->type === 'wedding' ? 'Wedding Combo' : 'Short Film Combo') : ($rental->gadget?->category?->name ?? '-') }}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
@@ -104,7 +125,8 @@
                                                         <form method="POST" action="{{ route('admin.rentals.approve', $rental) }}">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="rounded-md border border-green-300 px-3 py-2 font-body text-green-700 transition hover:bg-green-50">
+                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-green-300 px-3 py-2 font-body text-green-700 transition hover:bg-green-50">
+                                                                <x-icon-check class="h-3.5 w-3.5" />
                                                                 Approve
                                                             </button>
                                                         </form>
@@ -112,7 +134,8 @@
                                                         <form method="POST" action="{{ route('admin.rentals.reject', $rental) }}">
                                                             @csrf
                                                             @method('PATCH')
-                                                            <button type="submit" class="rounded-md border border-red-300 px-3 py-2 font-body text-red-700 transition hover:bg-red-50">
+                                                            <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 font-body text-red-700 transition hover:bg-red-50">
+                                                                <x-icon-x class="h-3.5 w-3.5" />
                                                                 Reject
                                                             </button>
                                                         </form>
@@ -124,15 +147,17 @@
                                                                 type="button"
                                                                 x-data
                                                                 x-on:click="$dispatch('open-modal', 'verify-payment-{{ $rental->id }}')"
-                                                                class="rounded-md border border-indigo-300 px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50"
+                                                                class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50"
                                                             >
+                                                                <x-icon-wallet class="h-3.5 w-3.5" />
                                                                 Verify Payment
                                                             </button>
 
                                                             <form method="POST" action="{{ route('admin.rentals.payment.reject', $rental) }}">
                                                                 @csrf
                                                                 @method('PATCH')
-                                                                <button type="submit" class="rounded-md border border-red-300 px-3 py-2 font-body text-red-700 transition hover:bg-red-50">
+                                                                <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 font-body text-red-700 transition hover:bg-red-50">
+                                                                    <x-icon-x class="h-3.5 w-3.5" />
                                                                     Reject Payment
                                                                 </button>
                                                             </form>
@@ -142,12 +167,14 @@
                                                     @endif
 
                                                     @if ($rental->status === 'approved')
-                                                        <a href="{{ route('admin.scan') }}" class="rounded-md border border-cyan-300 px-3 py-2 font-body text-cyan-700 transition hover:bg-cyan-50">
+                                                        <a href="{{ route('admin.scan') }}" class="inline-flex items-center gap-1.5 rounded-md border border-cyan-300 px-3 py-2 font-body text-cyan-700 transition hover:bg-cyan-50">
+                                                            <x-icon-qr class="h-3.5 w-3.5" />
                                                             Scan QR
                                                         </a>
                                                     @endif
 
-                                                    <a href="{{ route('admin.rentals.show', $rental) }}" class="rounded-md border border-indigo-200 bg-white px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50">
+                                                    <a href="{{ route('admin.rentals.show', $rental) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 bg-white px-3 py-2 font-body text-indigo-700 transition hover:bg-indigo-50">
+                                                        <x-icon-eye class="h-3.5 w-3.5" />
                                                         View
                                                     </a>
                                                 </div>

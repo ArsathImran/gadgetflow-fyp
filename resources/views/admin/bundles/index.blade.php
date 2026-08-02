@@ -38,7 +38,7 @@
                             </thead>
                             <tbody class="divide-y divide-slate-200 bg-white">
                                 @forelse ($bundles as $bundle)
-                                    <tr>
+                                    <tr class="transition hover:bg-slate-50">
                                         <td class="px-6 py-4">
                                             @if ($bundle->image)
                                                 <img
@@ -55,7 +55,9 @@
                                         <td class="px-6 py-4">
                                             <div class="font-display text-sm font-semibold text-ink">{{ $bundle->name }}</div>
                                             @if ($bundle->description)
-                                                <div class="mt-1 max-w-md font-body text-xs text-slate-500">{{ $bundle->description }}</div>
+                                                <div class="mt-1 max-w-xs truncate font-body text-xs text-slate-500" title="{{ $bundle->description }}">
+                                                    {{ \Illuminate\Support\Str::limit($bundle->description, 80) }}
+                                                </div>
                                             @endif
                                         </td>
                                         <td class="px-6 py-4 text-sm">
@@ -79,11 +81,17 @@
                                         </td>
                                         <td class="px-6 py-4 text-right font-body text-sm font-medium">
                                             <div class="inline-flex flex-wrap justify-end gap-2">
-                                                <a href="{{ route('admin.bundles.edit', $bundle) }}" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">Edit</a>
+                                                <a href="{{ route('admin.bundles.edit', $bundle) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
+                                                    <x-icon-pencil class="h-3.5 w-3.5" />
+                                                    Edit
+                                                </a>
                                                 <form action="{{ route('admin.bundles.destroy', $bundle) }}" method="POST" onsubmit="return confirm('Delete this bundle?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">Delete</button>
+                                                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
+                                                        <x-icon-trash class="h-3.5 w-3.5" />
+                                                        Delete
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>

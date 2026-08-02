@@ -24,61 +24,104 @@
 
             @if ($user->isAdmin())
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <p class="font-body text-sm font-medium text-slate">Total Gadgets</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $totalGadgetsCount }}</p>
+                    <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 8.25 12 4l8.25 4.25M3.75 8.25v8.5L12 21l8.25-4.25v-8.5M3.75 8.25 12 12.5l8.25-4.25M12 12.5V21" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-slate">Total Gadgets</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-ink">{{ $totalGadgetsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-                        <p class="font-body text-sm font-medium text-slate">Active Rentals</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-ink">{{ $activeRentalsCount }}</p>
+                    <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <rect x="3.5" y="5" width="17" height="15" rx="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path stroke-linecap="round" d="M3.5 9.5h17M8 3v3M16 3v3" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-slate">Active Rentals</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-ink">{{ $activeRentalsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(245,158,11,0.10)]">
-                        <p class="font-body text-sm font-medium text-amber-700">Pending Approvals</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-amber-900">{{ $pendingApprovalsCount }}</p>
+                    <div class="group rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(245,158,11,0.10)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(245,158,11,0.16)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <circle cx="12" cy="12.5" r="8" stroke-linecap="round" stroke-linejoin="round" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4l2.5 1.5" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-amber-700">Pending Approvals</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-amber-900">{{ $pendingApprovalsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-indigo-200 bg-indigo-50 p-6 shadow-[0_18px_40px_rgba(79,70,229,0.10)]">
-                        <p class="font-body text-sm font-medium text-indigo-700">Pending Payments</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-indigo-900">{{ $pendingPaymentsCount }}</p>
+                    <div class="group rounded-3xl border border-indigo-200 bg-indigo-50 p-6 shadow-[0_18px_40px_rgba(79,70,229,0.10)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(79,70,229,0.16)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.5 7.5A2 2 0 0 1 5.5 5.5h11a2 2 0 0 1 2 2v1h1.5a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-9Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.5 13.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-indigo-700">Pending Payments</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-indigo-900">{{ $pendingPaymentsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(251,191,36,0.12)]">
-                        <p class="font-body text-sm font-medium text-amber-700">Overdue Rentals</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-amber-900">{{ $overdueRentalsCount }}</p>
+                    <div class="group rounded-3xl border border-amber-200 bg-amber-50 p-6 shadow-[0_18px_40px_rgba(251,191,36,0.12)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(251,191,36,0.18)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 3.5h.01M10.29 3.86 1.82 18a1.5 1.5 0 0 0 1.29 2.25h17.78A1.5 1.5 0 0 0 22.18 18L13.71 3.86a1.5 1.5 0 0 0-2.42 0Z" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-amber-700">Overdue Rentals</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-amber-900">{{ $overdueRentalsCount }}</p>
                     </div>
-                    <div class="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)]">
-                        <p class="font-body text-sm font-medium text-emerald-700">Revenue This Month</p>
-                        <p class="mt-4 font-display text-5xl font-bold text-emerald-900">{{ number_format((float) $revenueThisMonth, 2) }}</p>
+                    <div class="group rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-[0_18px_40px_rgba(16,185,129,0.10)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(16,185,129,0.16)]">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.5 16.5 9.5 10.5 13.5 14.5 20.5 7.5" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.5 7.5h5v5" />
+                            </svg>
+                        </span>
+                        <p class="mt-4 font-body text-sm font-medium text-emerald-700">Revenue This Month</p>
+                        <p class="mt-1 font-display text-5xl font-bold text-emerald-900">{{ number_format((float) $revenueThisMonth, 2) }}</p>
                     </div>
                 </div>
 
                 <div class="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
-                    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
                         <div class="flex items-center justify-between">
                             <div>
                                 <h3 class="font-display text-lg font-semibold text-ink">Rentals Per Month</h3>
                                 <p class="mt-1 font-body text-sm text-slate">New rentals created over the last six months.</p>
                             </div>
                         </div>
-                        <div class="mt-6 h-80">
+                        <div class="relative mt-6 h-80">
                             <canvas id="rentalsPerMonthChart"></canvas>
                         </div>
                     </div>
 
                     <div class="space-y-6">
-                        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-display text-lg font-semibold text-ink">Low Stock Gadgets</h3>
                                     <p class="mt-1 font-body text-sm text-slate">Items that may need restocking soon.</p>
                                 </div>
                             </div>
-                            <div class="mt-6 space-y-4">
+                            <div class="mt-6 space-y-3">
                                 @forelse ($lowStockGadgets as $gadget)
-                                    <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-cloud px-4 py-3">
-                                        <div>
-                                            <p class="font-display font-semibold text-ink">{{ $gadget->name }}</p>
-                                            <p class="font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-cloud px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)]">
+                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
+                                            @if ($gadget->image)
+                                                <img src="{{ asset('storage/' . $gadget->image) }}" alt="{{ $gadget->name }}" class="h-full w-full object-cover">
+                                            @else
+                                                <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 8.25 12 4l8.25 4.25M3.75 8.25v8.5L12 21l8.25-4.25v-8.5M3.75 8.25 12 12.5l8.25-4.25M12 12.5V21" />
+                                                </svg>
+                                            @endif
                                         </div>
-                                        <span class="inline-flex rounded-full bg-rose-100 px-3 py-1 font-mono text-sm font-semibold text-rose-700">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate font-display font-semibold text-ink">{{ $gadget->name }}</p>
+                                            <p class="truncate font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                                        </div>
+                                        <span class="inline-flex shrink-0 rounded-full bg-rose-100 px-3 py-1 font-mono text-sm font-semibold text-rose-700">
                                             {{ $gadget->quantity }} left
                                         </span>
                                     </div>
@@ -90,21 +133,33 @@
                             </div>
                         </div>
 
-                        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-display text-lg font-semibold text-ink">Top Rented Gadgets</h3>
                                     <p class="mt-1 font-body text-sm text-slate">Most requested devices across all rentals.</p>
                                 </div>
                             </div>
-                            <div class="mt-6 space-y-4">
-                                @forelse ($topRentedGadgets as $gadget)
-                                    <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                                        <div>
-                                            <p class="font-display font-semibold text-ink">{{ $gadget->name }}</p>
-                                            <p class="font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                            <div class="mt-6 space-y-3">
+                                @forelse ($topRentedGadgets as $index => $gadget)
+                                    <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-[0_12px_24px_rgba(15,23,42,0.08)]">
+                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo/10 font-mono text-xs font-semibold text-indigo">
+                                            {{ $index + 1 }}
+                                        </span>
+                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-cloud ring-1 ring-slate-200">
+                                            @if ($gadget->image)
+                                                <img src="{{ asset('storage/' . $gadget->image) }}" alt="{{ $gadget->name }}" class="h-full w-full object-cover">
+                                            @else
+                                                <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 8.25 12 4l8.25 4.25M3.75 8.25v8.5L12 21l8.25-4.25v-8.5M3.75 8.25 12 12.5l8.25-4.25M12 12.5V21" />
+                                                </svg>
+                                            @endif
                                         </div>
-                                        <span class="inline-flex rounded-full bg-cyan-100 px-3 py-1 font-mono text-sm font-semibold text-cyan-700">
+                                        <div class="min-w-0 flex-1">
+                                            <p class="truncate font-display font-semibold text-ink">{{ $gadget->name }}</p>
+                                            <p class="truncate font-body text-sm text-slate">{{ $gadget->category?->name ?? 'Uncategorized' }}</p>
+                                        </div>
+                                        <span class="inline-flex shrink-0 rounded-full bg-cyan-100 px-3 py-1 font-mono text-sm font-semibold text-cyan-700">
                                             {{ $gadget->rentals_count }} rentals
                                         </span>
                                     </div>
@@ -118,7 +173,7 @@
                     </div>
                 </div>
 
-                <div class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                <div class="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">
                     <div class="flex flex-col gap-2">
                         <h3 class="font-display text-lg font-semibold text-ink">Reports</h3>
                         <p class="font-body text-sm text-slate">Export filtered rental records or download a monthly revenue summary.</p>
@@ -412,7 +467,7 @@
     </div>
 
     @if ($user->isAdmin())
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const chartElement = document.getElementById('rentalsPerMonthChart');
@@ -432,6 +487,7 @@
                             label: 'Rentals',
                             data: rentalCounts,
                             backgroundColor: '#4F46E5',
+                            hoverBackgroundColor: '#22D3EE',
                             borderRadius: 12,
                             maxBarThickness: 48,
                         }],
@@ -443,18 +499,29 @@
                             legend: {
                                 display: false,
                             },
+                            tooltip: {
+                                backgroundColor: '#0B1220',
+                                titleFont: { family: "'Space Grotesk', sans-serif" },
+                                bodyFont: { family: "'JetBrains Mono', monospace" },
+                                padding: 10,
+                                cornerRadius: 8,
+                            },
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
                                     precision: 0,
+                                    font: { family: "'JetBrains Mono', monospace", size: 11 },
                                 },
                                 grid: {
                                     color: '#e2e8f0',
                                 },
                             },
                             x: {
+                                ticks: {
+                                    font: { family: "'Inter', sans-serif", size: 12 },
+                                },
                                 grid: {
                                     display: false,
                                 },

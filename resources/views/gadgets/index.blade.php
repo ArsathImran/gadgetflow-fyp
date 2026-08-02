@@ -77,7 +77,11 @@
                             </thead>
                             <tbody class="divide-y divide-slate-200 bg-white">
                                 @forelse ($gadgets as $gadget)
-                                    <tr>
+                                    @php
+                                        $gadgetSubtitle = collect([$gadget->brand, $gadget->model])->filter()->implode(' ');
+                                        $showGadgetSubtitle = $gadgetSubtitle !== '' && strcasecmp($gadgetSubtitle, $gadget->name) !== 0;
+                                    @endphp
+                                    <tr class="transition hover:bg-slate-50">
                                         <td class="px-6 py-4">
                                             @if ($gadget->image)
                                                 <img
@@ -92,10 +96,12 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="font-display text-sm font-semibold text-ink">{{ $gadget->name }}</div>
-                                            @if ($gadget->brand || $gadget->model)
-                                                <div class="mt-1 font-body text-xs text-slate-500">{{ collect([$gadget->brand, $gadget->model])->filter()->implode(' ') }}</div>
-                                            @endif
+                                            <div class="flex min-h-[2.75rem] flex-col justify-center">
+                                                <div class="font-display text-sm font-semibold text-ink">{{ $gadget->name }}</div>
+                                                @if ($showGadgetSubtitle)
+                                                    <div class="mt-1 font-body text-xs text-slate-500">{{ $gadgetSubtitle }}</div>
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 font-body text-sm text-slate-600">{{ $gadget->category?->name ?? '-' }}</td>
                                         <td class="px-6 py-4 text-sm"><x-spec-chip>{{ number_format($gadget->daily_rental_price, 2) }}</x-spec-chip></td>
@@ -117,12 +123,21 @@
                                         </td>
                                         <td class="px-6 py-4 text-right font-body text-sm font-medium">
                                             <div class="inline-flex flex-wrap justify-end gap-2">
-                                                <a href="{{ route('gadgets.show', $gadget) }}" class="rounded-md border border-indigo-200 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">View</a>
-                                                <a href="{{ route('gadgets.edit', $gadget) }}" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">Edit</a>
+                                                <a href="{{ route('gadgets.show', $gadget) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
+                                                    <x-icon-eye class="h-3.5 w-3.5" />
+                                                    View
+                                                </a>
+                                                <a href="{{ route('gadgets.edit', $gadget) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">
+                                                    <x-icon-pencil class="h-3.5 w-3.5" />
+                                                    Edit
+                                                </a>
                                                 <form action="{{ route('gadgets.destroy', $gadget) }}" method="POST" onsubmit="return confirm('Delete this gadget?');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">Delete</button>
+                                                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
+                                                        <x-icon-trash class="h-3.5 w-3.5" />
+                                                        Delete
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
