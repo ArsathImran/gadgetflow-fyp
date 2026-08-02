@@ -30,6 +30,6 @@ class HandoverConfirmed extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("We've confirmed pickup of {$gadgetName}. Enjoy your rental!")
             ->line("Please remember to return it by {$dueDate}.")
-            ->action('View My Rentals', route('customer.rentals.index'));
+            ->action('View My Rentals', $this->rental->customerUrl());
     }
 }

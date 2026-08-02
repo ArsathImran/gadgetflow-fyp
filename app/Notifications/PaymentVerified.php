@@ -29,7 +29,7 @@ class PaymentVerified extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your payment for {$gadgetName} has been confirmed.")
             ->line('Your order is now being prepared for shipping or handover.')
-            ->action('View My Rentals', route('customer.rentals.index'))
+            ->action('View My Rentals', $this->rental->customerUrl())
             ->line('We’ll keep you updated as your rental progresses.');
     }
 }

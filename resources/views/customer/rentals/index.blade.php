@@ -47,7 +47,7 @@
                                         @php
                                             $itemThumbnail = $rental->isBundle() ? $rental->bundle?->image : $rental->gadget?->image;
                                         @endphp
-                                        <tr class="transition hover:bg-slate-50">
+                                        <tr id="rental-{{ $rental->id }}" class="transition hover:bg-slate-50">
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-3">
                                                     <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-cloud ring-1 ring-slate-200">
@@ -163,4 +163,31 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash;
+
+            if (! hash.startsWith('#rental-')) {
+                return;
+            }
+
+            const target = document.querySelector(hash);
+
+            if (! target) {
+                return;
+            }
+
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            target.style.backgroundColor = '#E0E7FF';
+
+            requestAnimationFrame(() => {
+                target.style.transition = 'background-color 1.5s ease';
+
+                setTimeout(() => {
+                    target.style.backgroundColor = '';
+                }, 300);
+            });
+        });
+    </script>
 </x-app-layout>

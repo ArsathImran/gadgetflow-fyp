@@ -33,7 +33,7 @@ class RentalSubmitted extends Notification
             ->line("Thanks for submitting a rental request for {$gadgetName}.")
             ->line("Requested period: {$rentalPeriod}.")
             ->line('Our team will review your request and let you know as soon as it\'s approved.')
-            ->action('View My Rentals', route('customer.rentals.index'))
+            ->action('View My Rentals', $this->rental->customerUrl())
             ->line('Thank you for choosing GadgetFlow.');
     }
 }

@@ -30,7 +30,7 @@ class RentalEndingSoon extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Just a reminder that your rental for {$gadgetName} is due back on {$dueDate}.")
             ->line('Please arrange to return it on time to avoid a late fee.')
-            ->action('View My Rentals', route('customer.rentals.index'))
+            ->action('View My Rentals', $this->rental->customerUrl())
             ->line('Thank you for choosing GadgetFlow.');
     }
 }

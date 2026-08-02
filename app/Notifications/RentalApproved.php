@@ -37,7 +37,7 @@ class RentalApproved extends Notification
         if ($this->rental->pickup_type === 'walk_in') {
             $message
                 ->line('Next step: please come to collect your gadget and complete the handover in person.')
-                ->action('View My Rentals', route('customer.rentals.index'));
+                ->action('View My Rentals', $this->rental->customerUrl());
         } else {
             $message
                 ->line('Next step: please upload your payment proof so we can prepare your order for delivery.')

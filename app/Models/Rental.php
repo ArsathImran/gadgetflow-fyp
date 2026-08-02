@@ -135,6 +135,11 @@ class Rental extends Model
             ?? 'Unknown Rental Item';
     }
 
+    public function customerUrl(): string
+    {
+        return route('customer.rentals.index') . '#rental-' . $this->id;
+    }
+
     public function isBundle(): bool
     {
         return $this->bundle_id !== null;

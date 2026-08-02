@@ -28,7 +28,7 @@ class GadgetShipped extends Notification
             ->subject('Your Order Has Shipped')
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your order for {$gadgetName} has shipped and is on its way to you.")
-            ->action('View My Rentals', route('customer.rentals.index'))
+            ->action('View My Rentals', $this->rental->customerUrl())
             ->line('We\'ll let you know when it\'s out for delivery.');
     }
 }

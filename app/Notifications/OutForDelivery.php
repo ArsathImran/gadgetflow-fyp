@@ -29,6 +29,6 @@ class OutForDelivery extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your order for {$gadgetName} is out for delivery and should arrive soon.")
             ->line('Please make sure someone is available to receive it.')
-            ->action('View My Rentals', route('customer.rentals.index'));
+            ->action('View My Rentals', $this->rental->customerUrl());
     }
 }

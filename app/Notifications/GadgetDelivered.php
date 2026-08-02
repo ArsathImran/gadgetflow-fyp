@@ -30,6 +30,6 @@ class GadgetDelivered extends Notification
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line("Your order for {$gadgetName} has been delivered. Enjoy your rental!")
             ->line("Please remember to return it by {$dueDate}.")
-            ->action('View My Rentals', route('customer.rentals.index'));
+            ->action('View My Rentals', $this->rental->customerUrl());
     }
 }

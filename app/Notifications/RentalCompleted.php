@@ -44,6 +44,6 @@ class RentalCompleted extends Notification
 
         return $message
             ->line('We’d love to hear about your experience.')
-            ->action('Leave a Review', route('customer.rentals.index'));
+            ->action('Leave a Review', $this->rental->customerUrl());
     }
 }
