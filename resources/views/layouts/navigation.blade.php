@@ -1,5 +1,12 @@
 @php
     $openInquiriesCount = Auth::user()->isAdmin() ? \App\Models\Inquiry::where('status', 'open')->count() : 0;
+    $pendingRentalActionsCount = Auth::user()->isAdmin()
+        ? \App\Models\Rental::query()
+            ->where(function ($query) {
+                $query->where('status', 'pending')->orWhere('payment_status', 'pending');
+            })
+            ->count()
+        : 0;
 @endphp
 
 <nav x-data="{ open: false }" class="bg-ink border-b border-white/10">
@@ -29,6 +36,11 @@
                         </x-nav-link>
                         <x-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                             {{ __('Rental Requests') }}
+                            @if ($pendingRentalActionsCount > 0)
+                                <span class="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-semibold text-white">
+                                    {{ $pendingRentalActionsCount }}
+                                </span>
+                            @endif
                         </x-nav-link>
                         <x-nav-link :href="route('admin.scan')" :active="request()->routeIs('admin.scan*')">
                             {{ __('Scan QR') }}
@@ -146,6 +158,11 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.rentals.index')" :active="request()->routeIs('admin.rentals.*')">
                     {{ __('Rental Requests') }}
+                    @if ($pendingRentalActionsCount > 0)
+                        <span class="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-semibold text-white">
+                            {{ $pendingRentalActionsCount }}
+                        </span>
+                    @endif
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.scan')" :active="request()->routeIs('admin.scan*')">
                     {{ __('Scan QR') }}

@@ -46,7 +46,7 @@
                                             $daysOverdue = $rental->daysOverdue();
                                             $itemThumbnail = $rental->isBundle() ? $rental->bundle?->image : $rental->gadget?->image;
                                         @endphp
-                                        <tr id="rental-{{ $rental->id }}" class="transition hover:bg-slate-50">
+                                        <tr id="rental-{{ $rental->id }}" class="transition hover:bg-slate-50 {{ ($rental->status === 'pending' || $rental->payment_status === 'pending') ? 'bg-amber-50/50' : '' }}">
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
                                                 <div class="flex items-center gap-3">
                                                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo font-display text-sm font-semibold text-white">

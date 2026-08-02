@@ -7,11 +7,16 @@ use App\Models\Gadget;
 use App\Models\LoyaltyTransaction;
 use App\Models\Rental;
 use App\Models\User;
+use App\Notifications\GadgetDelivered;
+use App\Notifications\GadgetShipped;
+use App\Notifications\HandoverConfirmed;
+use App\Notifications\OutForDelivery;
 use App\Notifications\PaymentRejected;
 use App\Notifications\PaymentVerified;
 use App\Notifications\RentalApproved;
 use App\Notifications\RentalCompleted;
 use App\Notifications\RentalRejected;
+use App\Notifications\RentalSubmitted;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -111,7 +116,9 @@ class RentalController extends Controller
         $qrToken = $this->generateUniqueQrToken();
         $requestedRedeemPoints = (int) ($validated['redeem_points'] ?? 0);
 
-        DB::transaction(function () use ($gadget, $bundle, $qrToken, $validated, $pickupType, $rentalDates, $totalAmount, $requestedRedeemPoints) {
+        $rental = null;
+
+        DB::transaction(function () use (&$rental, $gadget, $bundle, $qrToken, $validated, $pickupType, $rentalDates, $totalAmount, $requestedRedeemPoints) {
             $pointsRedeemed = 0;
             $discountAmount = 0;
             $finalTotalAmount = $totalAmount;
@@ -164,6 +171,9 @@ class RentalController extends Controller
                 ]);
             }
         });
+
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
+        $rental->user->notify(new RentalSubmitted($rental));
 
         return redirect()
             ->route('customer.rentals.index')
@@ -374,9 +384,12 @@ class RentalController extends Controller
             'handed_over_at' => now(),
         ]);
 
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
+        $rental->user->notify(new HandoverConfirmed($rental));
+
         return response()->json([
             'message' => 'Handover confirmed successfully.',
-            'handed_over_at' => $rental->fresh()->handed_over_at?->toIso8601String(),
+            'handed_over_at' => $rental->handed_over_at?->toIso8601String(),
         ]);
     }
 
@@ -690,6 +703,15 @@ class RentalController extends Controller
         $rental->update([
             'shipping_status' => $validated['shipping_status'],
         ]);
+
+        $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
+
+        match ($validated['shipping_status']) {
+            'shipped' => $rental->user->notify(new GadgetShipped($rental)),
+            'out_for_delivery' => $rental->user->notify(new OutForDelivery($rental)),
+            'delivered' => $rental->user->notify(new GadgetDelivered($rental)),
+            default => null,
+        };
 
         return back()->with('success', 'Shipping status updated successfully.');
     }
