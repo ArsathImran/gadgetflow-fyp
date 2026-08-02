@@ -1,3 +1,7 @@
+@php
+    $openInquiriesCount = Auth::user()->isAdmin() ? \App\Models\Inquiry::where('status', 'open')->count() : 0;
+@endphp
+
 <nav x-data="{ open: false }" class="bg-ink border-b border-white/10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -31,6 +35,14 @@
                         </x-nav-link>
                         <x-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
                             {{ __('Customers') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('admin.inquiries.index')" :active="request()->routeIs('admin.inquiries.*')">
+                            {{ __('Inquiries') }}
+                            @if ($openInquiriesCount > 0)
+                                <span class="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-semibold text-white">
+                                    {{ $openInquiriesCount }}
+                                </span>
+                            @endif
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -88,6 +100,9 @@
                             <x-dropdown-link :href="route('contact')">
                                 {{ __('Contact') }}
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('customer.inquiries.index')">
+                                {{ __('My Inquiries') }}
+                            </x-dropdown-link>
                         @endif
 
                         <form method="POST" action="{{ route('logout') }}">
@@ -138,6 +153,14 @@
                 <x-responsive-nav-link :href="route('admin.customers.index')" :active="request()->routeIs('admin.customers.*')">
                     {{ __('Customers') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.inquiries.index')" :active="request()->routeIs('admin.inquiries.*')">
+                    {{ __('Inquiries') }}
+                    @if ($openInquiriesCount > 0)
+                        <span class="ml-1.5 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-rose-500 px-1 font-mono text-[10px] font-semibold text-white">
+                            {{ $openInquiriesCount }}
+                        </span>
+                    @endif
+                </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
@@ -162,6 +185,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('contact')" :active="request()->routeIs('contact')">
                     {{ __('Contact') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('customer.inquiries.index')" :active="request()->routeIs('customer.inquiries.*')">
+                    {{ __('My Inquiries') }}
                 </x-responsive-nav-link>
             @endif
         </div>

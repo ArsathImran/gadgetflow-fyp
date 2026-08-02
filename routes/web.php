@@ -10,6 +10,7 @@ use App\Http\Controllers\CustomerBundleController;
 use App\Http\Controllers\CustomerGadgetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BundleController;
+use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\RentalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/rentals', [RentalController::class, 'store'])->name('customer.rentals.store');
     Route::get('/my-rentals', [RentalController::class, 'index'])->name('customer.rentals.index');
     Route::get('/rewards', [RewardsController::class, 'index'])->name('customer.rewards.index');
+    Route::get('/my-inquiries', [InquiryController::class, 'index'])->name('customer.inquiries.index');
     Route::get('/my-rentals/{rental}', [RentalController::class, 'show'])->name('customer.rentals.show');
     Route::get('/rentals/{rental}/qr', [RentalController::class, 'showQr'])->name('customer.rentals.qr');
     Route::patch('/rentals/{rental}/cancel', [RentalController::class, 'cancel'])->name('customer.rentals.cancel');
@@ -72,6 +74,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/admin/customers/{user}/toggle-block', [CustomerController::class, 'toggleBlock'])->name('admin.customers.toggleBlock');
     Route::get('/admin/reports/rentals-csv', [ReportController::class, 'rentalsCsv'])->name('admin.reports.rentals-csv');
     Route::get('/admin/reports/revenue-pdf', [ReportController::class, 'revenuePdf'])->name('admin.reports.revenue-pdf');
+    Route::get('/admin/inquiries', [InquiryController::class, 'adminIndex'])->name('admin.inquiries.index');
+    Route::get('/admin/inquiries/{inquiry}', [InquiryController::class, 'show'])->name('admin.inquiries.show');
+    Route::patch('/admin/inquiries/{inquiry}/reply', [InquiryController::class, 'reply'])->name('admin.inquiries.reply');
 });
 
 Route::middleware('auth')->group(function () {

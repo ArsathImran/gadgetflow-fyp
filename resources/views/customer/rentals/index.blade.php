@@ -33,13 +33,13 @@
                     @if ($rentals->count())
                         <div class="overflow-x-auto rounded-2xl border border-slate-200">
                             <table class="min-w-full divide-y divide-slate-200">
-                                <thead class="bg-cloud">
+                                <thead class="bg-ink">
                                     <tr>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Rental Item</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Pickup</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Total</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Status</th>
-                                        <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate">Action</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Rental Item</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Pickup</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Total</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Status</th>
+                                        <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200 bg-white">

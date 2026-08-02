@@ -12,12 +12,6 @@
 
     <div class="py-12 sm:py-16">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('status'))
-                <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 font-body text-sm text-emerald-700">
-                    {{ session('status') }}
-                </div>
-            @endif
-
             <div class="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)]">
                 {{-- Contact details --}}
                 <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
@@ -92,7 +86,7 @@
                                 id="contact-name"
                                 type="text"
                                 name="name"
-                                value="{{ old('name') }}"
+                                value="{{ old('name', auth()->user()->name) }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                             @error('name')
@@ -106,7 +100,7 @@
                                 id="contact-email"
                                 type="email"
                                 name="email"
-                                value="{{ old('email') }}"
+                                value="{{ old('email', auth()->user()->email) }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
                             @error('email')

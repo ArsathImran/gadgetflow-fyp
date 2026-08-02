@@ -10,11 +10,29 @@
 
     @php
         $tierStyles = [
-            'bronze' => ['badge' => 'bg-amber-100 text-amber-800 border-amber-200', 'bar' => 'bg-amber-500', 'card' => 'from-amber-50 to-white border-amber-200'],
-            'silver' => ['badge' => 'bg-slate-200 text-slate-700 border-slate-300', 'bar' => 'bg-slate-500', 'card' => 'from-slate-100 to-white border-slate-200'],
-            'gold' => ['badge' => 'bg-yellow-100 text-yellow-800 border-yellow-300', 'bar' => 'bg-yellow-500', 'card' => 'from-yellow-50 to-white border-yellow-200'],
+            'bronze' => [
+                'badge' => 'bg-amber-100 text-amber-800 border-amber-200',
+                'bar' => 'bg-gradient-to-r from-amber-500 to-yellow-400',
+                'card' => 'from-amber-50 to-white border-amber-200',
+            ],
+            'silver' => [
+                'badge' => 'bg-slate-200 text-slate-700 border-slate-300',
+                'bar' => 'bg-gradient-to-r from-slate-400 to-slate-300',
+                'card' => 'from-slate-100 to-white border-slate-200',
+            ],
+            'gold' => [
+                'badge' => 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                'bar' => 'bg-gradient-to-r from-yellow-500 to-amber-300',
+                'card' => 'from-yellow-50 to-white border-yellow-200',
+            ],
         ];
         $style = $tierStyles[$currentTier];
+
+        $tierPerks = [
+            'bronze' => ['label' => 'Bronze', 'threshold' => 0, 'badge' => 'bg-amber-100 text-amber-800 border-amber-200', 'perks' => ['Earn 1 point per RM1 spent', 'Redeem points for rental discounts']],
+            'silver' => ['label' => 'Silver', 'threshold' => config('loyalty.tiers.silver'), 'badge' => 'bg-slate-200 text-slate-700 border-slate-300', 'perks' => ['Earn 1 point per RM1 spent', 'Priority customer support']],
+            'gold' => ['label' => 'Gold', 'threshold' => config('loyalty.tiers.gold'), 'badge' => 'bg-yellow-100 text-yellow-800 border-yellow-300', 'perks' => ['Earn 1 point per RM1 spent', 'Priority customer support', 'Free delivery on rentals']],
+        ];
     @endphp
 
     <div class="py-12">
@@ -22,14 +40,20 @@
             <div class="space-y-6">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
                     <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:p-8">
-                        <p class="font-body text-sm font-medium text-slate">Points Balance</p>
+                        <div class="flex items-center gap-2">
+                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                                <x-icon-trophy class="h-4 w-4" />
+                            </span>
+                            <p class="font-body text-sm font-medium text-slate">Points Balance</p>
+                        </div>
                         <p class="mt-3 font-display text-5xl font-bold text-ink">{{ number_format($loyaltyPoints) }}</p>
                         <p class="mt-2 font-body text-sm text-slate">
                             Worth <x-spec-chip>{{ number_format(auth()->user()->pointsValueInCurrency($loyaltyPoints), 2) }}</x-spec-chip> in discounts
                         </p>
 
                         <div class="mt-6 flex items-center gap-3">
-                            <span class="inline-flex items-center rounded-full border px-3 py-1 font-body text-sm font-semibold {{ $style['badge'] }}">
+                            <span class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-body text-sm font-semibold {{ $style['badge'] }}">
+                                <x-icon-medal class="h-3.5 w-3.5" />
                                 {{ ucfirst($currentTier) }} Tier
                             </span>
                             <span class="font-mono text-xs text-slate">{{ number_format($lifetimePoints) }} lifetime pts</span>
@@ -37,21 +61,21 @@
 
                         <div class="mt-6">
                             @if ($nextTier)
-                                <div class="flex items-center justify-between font-body text-xs text-slate">
-                                    <span>{{ ucfirst($currentTier) }}</span>
-                                    <span>{{ ucfirst($nextTier) }} at {{ number_format($nextTierThreshold) }} pts</span>
+                                <div class="flex items-center justify-between font-body text-xs">
+                                    <span class="text-slate">{{ ucfirst($currentTier) }}</span>
+                                    <span class="font-semibold text-ink">{{ ucfirst($nextTier) }} at {{ number_format($nextTierThreshold) }} pts</span>
                                 </div>
-                                <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                    <div class="h-full rounded-full {{ $style['bar'] }}" style="width: {{ $tierProgressPercent }}%"></div>
+                                <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div class="h-full rounded-full {{ $style['bar'] }} transition-all" style="width: {{ $tierProgressPercent }}%"></div>
                                 </div>
-                                <p class="mt-2 font-body text-xs text-slate">
-                                    {{ max(0, $nextTierThreshold - $lifetimePoints) }} more lifetime points to reach {{ ucfirst($nextTier) }}.
+                                <p class="mt-2 font-body text-xs font-semibold text-indigo-700">
+                                    {{ number_format(max(0, $nextTierThreshold - $lifetimePoints)) }} more lifetime points to reach {{ ucfirst($nextTier) }}.
                                 </p>
                             @else
-                                <div class="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div class="h-3 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div class="h-full rounded-full {{ $style['bar'] }}" style="width: 100%"></div>
                                 </div>
-                                <p class="mt-2 font-body text-xs text-slate">You've reached the highest tier. Thanks for being a loyal customer!</p>
+                                <p class="mt-2 font-body text-xs font-semibold text-indigo-700">You've reached the highest tier. Thanks for being a loyal customer!</p>
                             @endif
                         </div>
                     </div>
@@ -68,23 +92,53 @@
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:p-8">
+                    <h3 class="font-display text-lg font-semibold text-ink">Tier Perks</h3>
+                    <p class="mt-1 font-body text-sm text-slate">What each tier unlocks as your lifetime points grow.</p>
+
+                    <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                        @foreach ($tierPerks as $tierKey => $tier)
+                            <div class="rounded-2xl border p-5 {{ $tierKey === $currentTier ? 'border-indigo-300 bg-indigo-50/40 ring-1 ring-indigo-200' : 'border-slate-200 bg-cloud' }}">
+                                <div class="flex items-center justify-between">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-body text-xs font-semibold {{ $tier['badge'] }}">
+                                        <x-icon-medal class="h-3.5 w-3.5" />
+                                        {{ $tier['label'] }}
+                                    </span>
+                                    @if ($tierKey === $currentTier)
+                                        <span class="font-mono text-[10px] font-semibold uppercase tracking-wide text-indigo-700">Your Tier</span>
+                                    @endif
+                                </div>
+                                <p class="mt-3 font-mono text-xs text-slate-500">{{ $tier['threshold'] > 0 ? number_format($tier['threshold']) . '+ lifetime pts' : 'Starting tier' }}</p>
+                                <ul class="mt-3 space-y-2 font-body text-sm text-slate-700">
+                                    @foreach ($tier['perks'] as $perk)
+                                        <li class="flex items-start gap-2">
+                                            <x-icon-check class="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-600" />
+                                            {{ $perk }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:p-8">
                     <h3 class="font-display text-lg font-semibold text-ink">Transaction History</h3>
                     <p class="mt-1 font-body text-sm text-slate">A record of points earned, redeemed, and refunded.</p>
 
                     @if ($transactions->count())
                         <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
                             <table class="min-w-full divide-y divide-slate-200">
-                                <thead class="bg-cloud">
+                                <thead class="bg-ink">
                                     <tr>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Date</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Description</th>
-                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate">Type</th>
-                                        <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate">Points</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Date</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Description</th>
+                                        <th class="px-6 py-3 text-left font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Type</th>
+                                        <th class="px-6 py-3 text-right font-body text-xs font-semibold uppercase tracking-wider text-slate-200">Points</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     @foreach ($transactions as $transaction)
-                                        <tr>
+                                        <tr class="transition hover:bg-slate-50">
                                             <td class="px-6 py-4 font-body text-sm text-slate-600">
                                                 {{ $transaction->created_at->format('Y-m-d H:i') }}
                                             </td>
@@ -105,7 +159,7 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right text-sm">
-                                                <x-spec-chip class="{{ $transaction->points >= 0 ? 'text-green-700' : 'text-rose-700' }}">
+                                                <x-spec-chip class="{{ $transaction->points >= 0 ? 'text-green-700' : 'text-indigo-700' }}">
                                                     {{ $transaction->points >= 0 ? '+' : '' }}{{ number_format($transaction->points) }}
                                                 </x-spec-chip>
                                             </td>

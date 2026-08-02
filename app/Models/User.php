@@ -86,6 +86,11 @@ class User extends Authenticatable
         return $this->hasMany(LoyaltyTransaction::class);
     }
 
+    public function inquiries(): HasMany
+    {
+        return $this->hasMany(Inquiry::class);
+    }
+
     public function currentTier(): string
     {
         $tiers = config('loyalty.tiers');
