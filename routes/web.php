@@ -72,7 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/customers', [CustomerController::class, 'index'])->name('admin.customers.index');
     Route::get('/admin/customers/{user}', [CustomerController::class, 'show'])->name('admin.customers.show');
     Route::patch('/admin/customers/{user}/toggle-block', [CustomerController::class, 'toggleBlock'])->name('admin.customers.toggleBlock');
-    Route::get('/admin/reports/rentals-csv', [ReportController::class, 'rentalsCsv'])->name('admin.reports.rentals-csv');
+    Route::get('/admin/reports/rentals-xlsx', [ReportController::class, 'rentalsXlsx'])->name('admin.reports.rentals-xlsx');
     Route::get('/admin/reports/revenue-pdf', [ReportController::class, 'revenuePdf'])->name('admin.reports.revenue-pdf');
     Route::get('/admin/inquiries', [InquiryController::class, 'adminIndex'])->name('admin.inquiries.index');
     Route::get('/admin/inquiries/{inquiry}', [InquiryController::class, 'show'])->name('admin.inquiries.show');

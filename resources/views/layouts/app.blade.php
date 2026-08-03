@@ -36,7 +36,9 @@
                 {{ $slot }}
             </main>
 
-            <x-footer />
+            @unless (Auth::user()->isAdmin())
+                <x-footer />
+            @endunless
         </div>
 
         @auth

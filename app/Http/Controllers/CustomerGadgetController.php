@@ -40,7 +40,7 @@ class CustomerGadgetController extends Controller
                     default => $query,
                 };
             })
-            ->latest()
+            ->orderBy('name', 'asc')
             ->paginate(12)
             ->withQueryString();
 

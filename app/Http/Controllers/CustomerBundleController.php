@@ -23,7 +23,7 @@ class CustomerBundleController extends Controller
         $bundles = Bundle::query()
             ->where('status', 'active')
             ->where('type', $type)
-            ->latest()
+            ->orderBy('name', 'asc')
             ->paginate(9)
             ->withQueryString();
 

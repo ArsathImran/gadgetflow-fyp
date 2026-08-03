@@ -181,10 +181,10 @@
 
                     <div class="mt-6 grid gap-6 xl:grid-cols-2">
                         <div class="rounded-2xl border border-slate-200 bg-cloud p-5">
-                            <h4 class="font-display text-base font-semibold text-ink">Rentals CSV</h4>
+                            <h4 class="font-display text-base font-semibold text-ink">Rentals Report</h4>
                             <p class="mt-1 font-body text-sm text-slate">Filter rentals by created date and status before exporting.</p>
 
-                            <form method="GET" action="{{ route('admin.reports.rentals-csv') }}" class="mt-5 grid gap-3 sm:grid-cols-2">
+                            <form method="GET" action="{{ route('admin.reports.rentals-xlsx') }}" class="mt-5 grid gap-3 sm:grid-cols-2">
                                 <div>
                                     <label for="report-from" class="font-body text-sm font-medium text-slate-700">From</label>
                                     <input
@@ -220,7 +220,7 @@
                                 </div>
                                 <div class="sm:col-span-2">
                                     <button type="submit" class="inline-flex items-center rounded-md bg-ink px-4 py-2 text-sm font-body font-semibold text-white shadow-sm transition hover:bg-slate-900">
-                                        Download CSV
+                                        Download Excel Report
                                     </button>
                                 </div>
                             </form>

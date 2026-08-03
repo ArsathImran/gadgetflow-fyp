@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RentalsExport;
 use App\Models\Rental;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -9,9 +10,15 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function rentalsCsv(Request $request)
+    public function rentalsXlsx(Request $request)
     {
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
+
+        if (! class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
+            return redirect()
+                ->route('dashboard')
+                ->with('error', 'Excel export is not available yet. Run "composer require maatwebsite/excel" first.');
+        }
 
         $validated = $request->validate([
             'from' => ['nullable', 'date'],
@@ -19,65 +26,9 @@ class ReportController extends Controller
             'status' => ['nullable', 'string'],
         ]);
 
-        $filename = 'rentals-report-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'rentals-report-' . now()->format('Y-m-d') . '.xlsx';
 
-        return response()->streamDownload(function () use ($validated) {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, [
-                'Rental ID',
-                'Customer Name',
-                'Customer Email',
-                'Rental Item',
-                'Rental Type',
-                'Start Date',
-                'End Date',
-                'Status',
-                'Payment Status',
-                'Total Amount',
-                'Deposit Amount',
-                'Deposit Status',
-                'Late Fee Amount',
-                'Returned At',
-            ]);
-
-            Rental::query()
-                ->with(['user', 'gadget', 'bundle'])
-                ->when(! empty($validated['from']), function ($query) use ($validated) {
-                    $query->whereDate('created_at', '>=', $validated['from']);
-                })
-                ->when(! empty($validated['to']), function ($query) use ($validated) {
-                    $query->whereDate('created_at', '<=', $validated['to']);
-                })
-                ->when(! empty($validated['status']), function ($query) use ($validated) {
-                    $query->where('status', $validated['status']);
-                })
-                ->orderBy('created_at')
-                ->chunk(200, function ($rentals) use ($handle) {
-                    foreach ($rentals as $rental) {
-                        fputcsv($handle, [
-                            $rental->id,
-                            $rental->user?->name ?? '-',
-                            $rental->user?->email ?? '-',
-                            $rental->itemName(),
-                            $rental->rental_type,
-                            $rental->start_date,
-                            $rental->end_date,
-                            $rental->status,
-                            $rental->payment_status,
-                            number_format((float) $rental->total_amount, 2, '.', ''),
-                            number_format((float) ($rental->deposit_amount ?? 0), 2, '.', ''),
-                            $rental->deposit_status,
-                            number_format((float) ($rental->late_fee_amount ?? 0), 2, '.', ''),
-                            $rental->returned_at?->format('Y-m-d H:i:s'),
-                        ]);
-                    }
-                });
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(new RentalsExport($validated), $filename);
     }
 
     public function revenuePdf(Request $request)
