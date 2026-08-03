@@ -14,7 +14,7 @@ class BundleController extends Controller
         abort_unless(auth()->check() && auth()->user()->isAdmin(), 403);
 
         $bundles = Bundle::query()
-            ->latest()
+            ->orderBy('name', 'asc')
             ->paginate(10);
 
         return view('admin.bundles.index', compact('bundles'));

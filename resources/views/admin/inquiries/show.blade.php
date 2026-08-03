@@ -17,12 +17,6 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="space-y-6">
-                @if (session('success'))
-                    <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] sm:p-8">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div class="flex items-center gap-3">

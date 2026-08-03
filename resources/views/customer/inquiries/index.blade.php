@@ -17,12 +17,6 @@
 
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            @if (session('success'))
-                <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                    {{ session('success') }}
-                </div>
-            @endif
-
             @if ($inquiries->count())
                 <div class="space-y-4">
                     @foreach ($inquiries as $inquiry)

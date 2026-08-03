@@ -18,18 +18,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @if (session('success'))
-                        <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
-                    @if (session('error'))
-                        <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
                     @if ($rentals->count())
                         <div class="overflow-x-auto rounded-2xl border border-slate-200">
                             <table class="min-w-full divide-y divide-slate-200">
@@ -113,14 +101,41 @@
                                                     }}
                                                 </span>
                                                 @if ($rental->status === 'pending')
-                                                    <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" class="mt-3" onsubmit="return confirm('Are you sure you want to cancel this rental request?');">
-                                                        @csrf
-                                                        @method('PATCH')
-                                                        <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-xs font-body font-semibold text-indigo-700 transition hover:bg-indigo-50">
-                                                            <x-icon-x-circle class="h-3.5 w-3.5" />
-                                                            Cancel Request
-                                                        </button>
-                                                    </form>
+                                                    <button
+                                                        type="button"
+                                                        x-data=""
+                                                        x-on:click.prevent="$dispatch('open-modal', 'confirm-rental-cancel-{{ $rental->id }}')"
+                                                        class="mt-3 inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-xs font-body font-semibold text-indigo-700 transition hover:bg-indigo-50"
+                                                    >
+                                                        <x-icon-x-circle class="h-3.5 w-3.5" />
+                                                        Cancel Request
+                                                    </button>
+
+                                                    <x-modal name="confirm-rental-cancel-{{ $rental->id }}" focusable>
+                                                        <form method="POST" action="{{ route('customer.rentals.cancel', $rental) }}" class="p-6">
+                                                            @csrf
+                                                            @method('PATCH')
+
+                                                            <h2 class="font-display text-lg font-semibold text-ink">
+                                                                {{ __('Cancel this rental request?') }}
+                                                            </h2>
+
+                                                            <p class="mt-1 font-body text-sm text-slate">
+                                                                {{ __('Are you sure you want to cancel this rental request?') }}
+                                                            </p>
+
+                                                            <div class="mt-6 flex justify-end">
+                                                                <x-secondary-button x-on:click="$dispatch('close')">
+                                                                    {{ __('Keep Request') }}
+                                                                </x-secondary-button>
+
+                                                                <button type="submit" class="ms-3 inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-xs font-body font-semibold text-indigo-700 transition hover:bg-indigo-50">
+                                                                    <x-icon-x-circle class="h-3.5 w-3.5" />
+                                                                    Cancel Request
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </x-modal>
                                                 @endif
                                                 @if ($rental->isOverdue())
                                                     <div class="mt-2">

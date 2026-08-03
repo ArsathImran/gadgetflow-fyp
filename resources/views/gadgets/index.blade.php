@@ -18,12 +18,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @if (session('success'))
-                        <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
                     <form method="GET" action="{{ route('gadgets.index') }}" class="mb-6 grid gap-3 lg:grid-cols-12">
                         <div class="lg:col-span-5">
                             <input
@@ -131,14 +125,40 @@
                                                     <x-icon-pencil class="h-3.5 w-3.5" />
                                                     Edit
                                                 </a>
-                                                <form action="{{ route('gadgets.destroy', $gadget) }}" method="POST" onsubmit="return confirm('Delete this gadget?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">
-                                                        <x-icon-trash class="h-3.5 w-3.5" />
-                                                        Delete
-                                                    </button>
-                                                </form>
+                                                <button
+                                                    type="button"
+                                                    x-data=""
+                                                    x-on:click.prevent="$dispatch('open-modal', 'confirm-gadget-delete-{{ $gadget->id }}')"
+                                                    class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50"
+                                                >
+                                                    <x-icon-trash class="h-3.5 w-3.5" />
+                                                    Delete
+                                                </button>
+
+                                                <x-modal name="confirm-gadget-delete-{{ $gadget->id }}" focusable>
+                                                    <form action="{{ route('gadgets.destroy', $gadget) }}" method="POST" class="p-6">
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <h2 class="font-display text-lg font-semibold text-ink">
+                                                            {{ __('Delete this gadget?') }}
+                                                        </h2>
+
+                                                        <p class="mt-1 font-body text-sm text-slate">
+                                                            {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $gadget->name]) }}
+                                                        </p>
+
+                                                        <div class="mt-6 flex justify-end">
+                                                            <x-secondary-button x-on:click="$dispatch('close')">
+                                                                {{ __('Cancel') }}
+                                                            </x-secondary-button>
+
+                                                            <x-danger-button class="ms-3">
+                                                                {{ __('Delete') }}
+                                                            </x-danger-button>
+                                                        </div>
+                                                    </form>
+                                                </x-modal>
                                             </div>
                                         </td>
                                     </tr>

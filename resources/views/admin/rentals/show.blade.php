@@ -17,18 +17,6 @@
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="space-y-6">
-                @if (session('success'))
-                    <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
                 @php
                     $paymentProofs = $rental->payment_proofs ?? ($rental->payment_proof ? [$rental->payment_proof] : []);
                     $daysOverdue = $rental->daysOverdue();

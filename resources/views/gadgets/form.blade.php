@@ -203,6 +203,24 @@
                         </div>
 
                         <div>
+                            <label class="inline-flex items-center gap-2">
+                                <input
+                                    id="is_featured"
+                                    name="is_featured"
+                                    type="checkbox"
+                                    value="1"
+                                    @checked(old('is_featured', $isEditing ? $gadget->is_featured : false))
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                >
+                                <span class="font-body text-sm font-medium text-slate-700">{{ __('Featured on homepage') }}</span>
+                            </label>
+                            <p class="mt-2 font-body text-sm text-slate-500">
+                                Pin this gadget as the featured image on the Browse Gadgets page. If no gadget is marked featured, the most recently added active gadget is shown instead.
+                            </p>
+                            <x-input-error class="mt-2" :messages="$errors->get('is_featured')" />
+                        </div>
+
+                        <div>
                             <label for="image" class="block font-body text-sm font-medium text-slate-700">{{ __('Image') }}</label>
                             <input
                                 id="image"

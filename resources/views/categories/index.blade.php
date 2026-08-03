@@ -18,12 +18,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @if (session('success'))
-                        <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
                     <form method="GET" action="{{ route('categories.index') }}" class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <div class="flex-1">
                             <input
@@ -74,11 +68,37 @@
                                             <div class="inline-flex flex-wrap justify-end gap-2">
                                                 <a href="{{ route('categories.show', $category) }}" class="rounded-md border border-gray-300 px-3 py-2 text-gray-700 transition hover:bg-gray-50">View</a>
                                                 <a href="{{ route('categories.edit', $category) }}" class="rounded-md border border-indigo-300 px-3 py-2 text-indigo-700 transition hover:bg-indigo-50">Edit</a>
-                                                <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Delete this category?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50">Delete</button>
-                                                </form>
+                                                <button
+                                                    type="button"
+                                                    x-data=""
+                                                    x-on:click.prevent="$dispatch('open-modal', 'confirm-category-delete-{{ $category->id }}')"
+                                                    class="rounded-md border border-red-300 px-3 py-2 text-red-700 transition hover:bg-red-50"
+                                                >Delete</button>
+
+                                                <x-modal name="confirm-category-delete-{{ $category->id }}" focusable>
+                                                    <form action="{{ route('categories.destroy', $category) }}" method="POST" class="p-6">
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <h2 class="font-display text-lg font-semibold text-ink">
+                                                            {{ __('Delete this category?') }}
+                                                        </h2>
+
+                                                        <p class="mt-1 font-body text-sm text-slate">
+                                                            {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $category->name]) }}
+                                                        </p>
+
+                                                        <div class="mt-6 flex justify-end">
+                                                            <x-secondary-button x-on:click="$dispatch('close')">
+                                                                {{ __('Cancel') }}
+                                                            </x-secondary-button>
+
+                                                            <x-danger-button class="ms-3">
+                                                                {{ __('Delete') }}
+                                                            </x-danger-button>
+                                                        </div>
+                                                    </form>
+                                                </x-modal>
                                             </div>
                                         </td>
                                     </tr>

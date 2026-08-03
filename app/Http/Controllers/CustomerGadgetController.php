@@ -53,13 +53,22 @@ class CustomerGadgetController extends Controller
             ]);
         }
 
-        $featuredGadget = Gadget::query()
+        $featuredGadgetBaseQuery = fn () => Gadget::query()
             ->with('category')
             ->where('status', 'active')
             ->where('quantity', '>', 0)
-            ->whereNotNull('image')
+            ->whereNotNull('image');
+
+        $featuredGadget = $featuredGadgetBaseQuery()
+            ->where('is_featured', true)
             ->latest()
             ->first();
+
+        if (! $featuredGadget) {
+            $featuredGadget = $featuredGadgetBaseQuery()
+                ->latest()
+                ->first();
+        }
 
         return view('customer.gadgets.index', compact('gadgets', 'categories', 'featuredGadget'));
     }

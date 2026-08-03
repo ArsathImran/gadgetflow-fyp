@@ -58,7 +58,7 @@
                         </x-nav-link>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                            {{ __('Dashboard') }}
+                            {{ __('Home') }}
                         </x-nav-link>
                         <x-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">
                             {{ __('Browse Gadgets') }}
@@ -180,7 +180,7 @@
                 </x-responsive-nav-link>
             @else
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    {{ __('Dashboard') }}
+                    {{ __('Home') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('customer.gadgets.index')" :active="request()->routeIs('customer.gadgets.*')">
                     {{ __('Browse Gadgets') }}

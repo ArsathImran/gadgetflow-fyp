@@ -7,19 +7,35 @@
 >
     <style>[x-cloak] { display: none !important; }</style>
 
-    <button
-        @click="toggle()"
-        type="button"
-        class="flex h-14 w-14 items-center justify-center rounded-full bg-indigo text-white shadow-[0_16px_40px_rgba(79,70,229,0.35)] transition hover:bg-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-200"
-        aria-label="Open GadgetFlow Assistant chat"
-    >
-        <svg x-show="!open" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8Z" />
-        </svg>
-        <svg x-show="open" x-cloak class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18" />
-        </svg>
-    </button>
+    <div class="relative h-14 w-14">
+        <span
+            x-show="!open && !hasOpened"
+            x-cloak
+            class="absolute inset-0 rounded-full bg-gradient-to-br from-indigo to-cyan opacity-75 animate-[ping_2.2s_cubic-bezier(0,0,0.2,1)_infinite]"
+            aria-hidden="true"
+        ></span>
+
+        <button
+            @click="toggle()"
+            type="button"
+            class="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-indigo to-cyan text-white shadow-[0_16px_40px_rgba(79,70,229,0.35)] transition duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-[0_20px_50px_rgba(34,211,238,0.45)] focus:outline-none focus:ring-4 focus:ring-indigo-200"
+            aria-label="Open GadgetFlow Assistant chat"
+        >
+            <svg x-show="!open" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4H6.5A2.5 2.5 0 0 1 4 13.5v-8Z" />
+            </svg>
+            <svg x-show="open" x-cloak class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18" />
+            </svg>
+
+            <span
+                x-show="hasUnread && !open"
+                x-cloak
+                class="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full bg-cyan-400 ring-2 ring-white"
+                aria-hidden="true"
+            ></span>
+        </button>
+    </div>
 
     <div
         x-show="open"

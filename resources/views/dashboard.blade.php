@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col gap-2">
             <h2 class="font-display text-xl font-semibold text-ink leading-tight">
-                {{ auth()->user()->isAdmin() ? __('Admin Dashboard') : __('My Dashboard') }}
+                {{ auth()->user()->isAdmin() ? __('Admin Dashboard') : __('Home') }}
             </h2>
             <p class="font-body text-sm text-slate">
                 {{ auth()->user()->isAdmin() ? 'Track rentals, inventory, and revenue at a glance.' : 'Stay on top of your rentals, due dates, and spending.' }}
@@ -16,12 +16,6 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if (session('error'))
-                <div class="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             @if ($user->isAdmin())
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <div class="group rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_18px_40px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_24px_50px_rgba(15,23,42,0.12)]">

@@ -26,10 +26,12 @@ class Gadget extends Model
         'gallery_images',
         'status',
         'condition',
+        'is_featured',
     ];
 
     protected $casts = [
         'gallery_images' => 'array',
+        'is_featured' => 'boolean',
     ];
 
     public function category(): BelongsTo

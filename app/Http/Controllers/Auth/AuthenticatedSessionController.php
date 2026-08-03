@@ -28,6 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $request->user()->update(['chat_session_started_at' => now()]);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

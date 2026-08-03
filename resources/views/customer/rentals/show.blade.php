@@ -17,18 +17,6 @@
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="space-y-6">
-                @if (session('success'))
-                    <div class="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
                 <div class="bg-white shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <div class="flex flex-col gap-4 border-b border-gray-100 pb-6 sm:flex-row sm:items-start sm:justify-between">

@@ -28,12 +28,6 @@
         <div class="max-w-7xl mx-auto space-y-6 sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    @if (session('success'))
-                        <div class="mb-6 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-
                     <div class="grid gap-4 sm:grid-cols-4">
                         <div class="rounded-2xl bg-cloud p-4">
                             <p class="font-body text-sm text-slate">Name</p>

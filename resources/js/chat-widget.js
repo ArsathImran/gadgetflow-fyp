@@ -6,6 +6,8 @@ document.addEventListener('alpine:init', () => {
         loading: false,
         sending: false,
         historyLoaded: false,
+        hasOpened: false,
+        hasUnread: false,
         messages: [],
         newMessage: '',
         csrfToken: '',
@@ -20,6 +22,11 @@ document.addEventListener('alpine:init', () => {
 
         async toggle() {
             this.open = ! this.open;
+
+            if (this.open) {
+                this.hasOpened = true;
+                this.hasUnread = false;
+            }
 
             if (this.open && ! this.historyLoaded) {
                 await this.loadHistory();
@@ -82,6 +89,10 @@ document.addEventListener('alpine:init', () => {
 
                 const data = await response.json();
                 this.messages.push(data.message);
+
+                if (! this.open) {
+                    this.hasUnread = true;
+                }
             } catch (error) {
                 console.error(error);
                 this.messages.push({

@@ -34,6 +34,7 @@ class User extends Authenticatable
         'avatar_path',
         'id_document_path',
         'id_document_uploaded_at',
+        'chat_session_started_at',
     ];
 
     /**
@@ -58,6 +59,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_blocked' => 'boolean',
             'id_document_uploaded_at' => 'datetime',
+            'chat_session_started_at' => 'datetime',
         ];
     }
 

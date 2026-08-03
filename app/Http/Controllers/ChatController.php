@@ -16,8 +16,13 @@ class ChatController extends Controller
 
     public function index(Request $request)
     {
+        $user = $request->user();
+
         $messages = ChatMessage::query()
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $user->id)
+            ->when($user->chat_session_started_at, function ($query) use ($user) {
+                $query->where('created_at', '>=', $user->chat_session_started_at);
+            })
             ->latest('id')
             ->limit(self::HISTORY_LIMIT)
             ->get()
@@ -50,6 +55,9 @@ class ChatController extends Controller
         $history = ChatMessage::query()
             ->where('user_id', $user->id)
             ->where('id', '<', $userMessage->id)
+            ->when($user->chat_session_started_at, function ($query) use ($user) {
+                $query->where('created_at', '>=', $user->chat_session_started_at);
+            })
             ->latest('id')
             ->limit(self::HISTORY_LIMIT)
             ->get()

@@ -29,7 +29,7 @@ class GadgetController extends Controller
             ->when($request->filled('category_id'), function ($query) use ($request) {
                 $query->where('category_id', $request->integer('category_id'));
             })
-            ->latest()
+            ->orderBy('name', 'asc')
             ->paginate(10)
             ->withQueryString();
 
@@ -73,7 +73,10 @@ class GadgetController extends Controller
             'gallery_images.*' => ['image', 'max:2048'],
             'status' => ['required', 'in:active,inactive'],
             'condition' => ['required', 'in:new,like_new,good,fair'],
+            'is_featured' => ['nullable', 'boolean'],
         ]);
+
+        $validated['is_featured'] = $request->boolean('is_featured');
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('gadgets', 'public');
@@ -147,7 +150,10 @@ class GadgetController extends Controller
             'remove_gallery_images.*' => ['string'],
             'status' => ['required', 'in:active,inactive'],
             'condition' => ['required', 'in:new,like_new,good,fair'],
+            'is_featured' => ['nullable', 'boolean'],
         ]);
+
+        $validated['is_featured'] = $request->boolean('is_featured');
 
         $existingGalleryImages = collect($gadget->gallery_images ?? []);
         $removedGalleryImages = collect($validated['remove_gallery_images'] ?? [])
