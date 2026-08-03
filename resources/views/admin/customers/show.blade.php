@@ -58,6 +58,49 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="mt-4 grid gap-4 sm:grid-cols-4">
+                        <div class="rounded-2xl bg-cloud p-4">
+                            <p class="font-body text-sm text-slate">Phone</p>
+                            <p class="mt-1 font-body text-base font-semibold text-ink">{{ $user->phone ?: '—' }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-cloud p-4">
+                            <p class="font-body text-sm text-slate">City</p>
+                            <p class="mt-1 font-body text-base font-semibold text-ink">{{ $user->city ?: '—' }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-cloud p-4">
+                            <p class="font-body text-sm text-slate">State</p>
+                            <p class="mt-1 font-body text-base font-semibold text-ink">{{ $user->state ?: '—' }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-cloud p-4">
+                            <p class="font-body text-sm text-slate">Address</p>
+                            <p class="mt-1 font-body text-base font-semibold text-ink">{{ $user->address ?: '—' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid gap-4 sm:grid-cols-4">
+                        <div class="rounded-2xl bg-cloud p-4 sm:col-span-2">
+                            <p class="font-body text-sm text-slate">Supporting Document</p>
+                            @if ($user->id_document_path)
+                                <div class="mt-2 flex flex-wrap items-center gap-3">
+                                    <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">Uploaded</span>
+                                    <span class="font-body text-sm text-slate-600">{{ $user->id_document_uploaded_at?->format('Y-m-d') }}</span>
+                                    <a
+                                        href="{{ Storage::url($user->id_document_path) }}"
+                                        target="_blank"
+                                        rel="noopener"
+                                        class="font-body text-sm font-semibold text-indigo transition hover:text-indigo-700"
+                                    >
+                                        View Document
+                                    </a>
+                                </div>
+                            @else
+                                <div class="mt-2">
+                                    <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 font-body text-xs font-semibold text-amber-800">Not Uploaded</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 
