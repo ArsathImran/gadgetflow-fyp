@@ -170,6 +170,51 @@
                             @endif
                         </div>
 
+                        <div>
+                            <label for="gallery_images" class="block font-body text-sm font-medium text-slate-700">{{ __('Gallery Images') }}</label>
+                            <input
+                                id="gallery_images"
+                                name="gallery_images[]"
+                                type="file"
+                                multiple
+                                class="mt-1 block w-full font-body text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-gray-700 hover:file:bg-gray-200"
+                            >
+                            <p class="mt-2 font-body text-sm text-slate-500">
+                                Upload up to 6 additional photos for the bundle detail page. These are separate from the cover image above.
+                            </p>
+                            <x-input-error class="mt-2" :messages="$errors->get('gallery_images')" />
+                            <x-input-error class="mt-2" :messages="$errors->get('gallery_images.*')" />
+
+                            @if ($isEditing && !empty($bundle->gallery_images))
+                                <div class="mt-4">
+                                    <p class="font-body text-sm font-medium text-slate-500">Existing Gallery Images</p>
+                                    <div class="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                        @foreach ($bundle->gallery_images as $galleryImage)
+                                            <label class="overflow-hidden rounded-xl border border-gray-200 bg-cloud">
+                                                <img
+                                                    src="{{ asset('storage/' . $galleryImage) }}"
+                                                    alt="{{ $bundle->name }} gallery image {{ $loop->iteration }}"
+                                                    class="h-32 w-full object-cover"
+                                                >
+                                                <div class="flex items-center gap-2 px-3 py-3 font-body text-sm text-gray-700">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="remove_gallery_images[]"
+                                                        value="{{ $galleryImage }}"
+                                                        @checked(in_array($galleryImage, old('remove_gallery_images', []), true))
+                                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                    >
+                                                    <span>Remove this image</span>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images')" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images.*')" />
+                                </div>
+                            @endif
+                        </div>
+
                         <div class="flex items-center gap-4">
                             <button type="submit" class="inline-flex items-center justify-center rounded-md bg-indigo px-5 py-2.5 text-sm font-body font-semibold text-white shadow-sm transition hover:bg-indigo-500">
                                 {{ __('Save') }}
