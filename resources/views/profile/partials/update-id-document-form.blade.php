@@ -23,14 +23,25 @@
                         <p class="mt-0.5 font-body text-xs text-slate">{{ __('Uploaded on :date', ['date' => $user->id_document_uploaded_at?->format('M j, Y')]) }}</p>
                     </div>
                 </div>
-                <a
-                    href="{{ asset('storage/' . $user->id_document_path) }}"
-                    target="_blank"
-                    rel="noopener"
-                    class="font-body text-sm font-semibold text-indigo transition hover:text-indigo-700"
-                >
-                    {{ __('View') }}
-                </a>
+                <div class="flex items-center gap-4">
+                    <a
+                        href="{{ asset('storage/' . $user->id_document_path) }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="font-body text-sm font-semibold text-indigo transition hover:text-indigo-700"
+                    >
+                        {{ __('View') }}
+                    </a>
+
+                    <a
+                        href="#"
+                        x-data=""
+                        x-on:click.prevent="$dispatch('open-modal', 'confirm-id-document-removal')"
+                        class="font-body text-sm font-semibold text-red-600 transition hover:text-red-700"
+                    >
+                        {{ __('Remove') }}
+                    </a>
+                </div>
             </div>
         @endif
 
@@ -53,6 +64,31 @@
             >
         </form>
 
+        <x-modal name="confirm-id-document-removal" focusable>
+            <form method="post" action="{{ route('profile.id-document.destroy') }}" class="p-6">
+                @csrf
+                @method('delete')
+
+                <h2 class="font-display text-lg font-semibold text-ink">
+                    {{ __('Remove supporting document?') }}
+                </h2>
+
+                <p class="mt-1 font-body text-sm text-slate">
+                    {{ __('This will permanently delete your uploaded document. You will need to re-upload it before placing a delivery order.') }}
+                </p>
+
+                <div class="mt-6 flex justify-end">
+                    <x-secondary-button x-on:click="$dispatch('close-modal', 'confirm-id-document-removal')">
+                        {{ __('Cancel') }}
+                    </x-secondary-button>
+
+                    <x-danger-button class="ms-3">
+                        {{ __('Remove Document') }}
+                    </x-danger-button>
+                </div>
+            </form>
+        </x-modal>
+
         @error('id_document', 'idDocumentUpdate')
             <p class="mt-2 font-body text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -65,6 +101,16 @@
                 x-init="setTimeout(() => show = false, 2000)"
                 class="mt-2 font-body text-sm text-emerald-600"
             >{{ __('Document uploaded.') }}</p>
+        @endif
+
+        @if (session('status') === 'id-document-removed')
+            <p
+                x-data="{ show: true }"
+                x-show="show"
+                x-transition
+                x-init="setTimeout(() => show = false, 2000)"
+                class="mt-2 font-body text-sm text-emerald-600"
+            >{{ __('Document removed.') }}</p>
         @endif
     </div>
 </section>

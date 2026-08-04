@@ -82,6 +82,24 @@ class ProfileController extends Controller
     }
 
     /**
+     * Remove the user's supporting ID document.
+     */
+    public function destroyIdDocument(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->id_document_path) {
+            Storage::disk('public')->delete($user->id_document_path);
+
+            $user->id_document_path = null;
+            $user->id_document_uploaded_at = null;
+            $user->save();
+        }
+
+        return Redirect::route('profile.edit')->with('status', 'id-document-removed');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

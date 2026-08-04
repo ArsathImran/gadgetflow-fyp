@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::post('/profile/id-document', [ProfileController::class, 'updateIdDocument'])->name('profile.id-document.update');
+    Route::delete('/profile/id-document', [ProfileController::class, 'destroyIdDocument'])->name('profile.id-document.destroy');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
