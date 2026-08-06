@@ -13,7 +13,7 @@
 /.zed
 /auth.json
 /node_modules
-/public/build
+# /public/build (tracked intentionally: pre-built assets are committed for Railway deploys)
 /public/hot
 /public/storage
 /storage/*.key
