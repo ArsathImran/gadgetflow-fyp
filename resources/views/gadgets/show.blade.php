@@ -127,7 +127,7 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 overflow-hidden rounded-xl border border-gray-200">
+                        <div class="mt-4 overflow-x-auto rounded-xl border border-gray-200">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>

@@ -46,7 +46,7 @@
         x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100 translate-y-0"
         x-transition:leave-end="opacity-0 translate-y-2"
-        class="absolute bottom-[4.5rem] right-0 flex h-[500px] w-[350px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(11,18,32,0.25)] sm:w-[380px]"
+        class="absolute bottom-[4.5rem] right-0 flex h-[500px] w-[calc(100vw-3rem)] max-w-[350px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_60px_rgba(11,18,32,0.25)] sm:w-[380px] sm:max-w-none"
     >
         <div class="flex items-center justify-between gap-3 bg-ink px-5 py-4">
             <div class="flex items-center gap-2">

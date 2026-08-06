@@ -15,7 +15,8 @@
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     @if ($inquiries->count())
-                        <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        {{-- Desktop / tablet: table layout --}}
+                        <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                             <table class="min-w-full divide-y divide-slate-200">
                                 <thead class="bg-ink">
                                     <tr>
@@ -69,6 +70,47 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        {{-- Mobile: stacked card layout --}}
+                        <div class="md:hidden space-y-3">
+                            @foreach ($inquiries as $inquiry)
+                                <div class="rounded-2xl border border-slate-200 bg-white p-4 {{ $inquiry->status === 'open' ? 'bg-amber-50/50' : '' }}">
+                                    <div class="flex items-center gap-3">
+                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo font-display text-sm font-semibold text-white">
+                                            {{ strtoupper(substr($inquiry->name, 0, 1)) }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <div class="font-medium text-ink">{{ $inquiry->name }}</div>
+                                            <div class="text-xs text-slate-500">{{ $inquiry->email }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 truncate font-display text-sm font-semibold text-ink" title="{{ $inquiry->subject }}">
+                                        {{ $inquiry->subject }}
+                                    </div>
+
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <span class="font-body text-sm text-slate-600">{{ $inquiry->created_at->format('Y-m-d H:i') }}</span>
+                                        @if ($inquiry->status === 'open')
+                                            <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 font-body text-xs font-semibold text-amber-800">
+                                                Waiting for Response
+                                            </span>
+                                        @else
+                                            <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">
+                                                Responded
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <div class="mt-4 border-t border-slate-100 pt-4">
+                                        <a href="{{ route('admin.inquiries.show', $inquiry) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-sm text-indigo-700 transition hover:bg-indigo-50">
+                                            <x-icon-eye class="h-3.5 w-3.5" />
+                                            View
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="mt-6">

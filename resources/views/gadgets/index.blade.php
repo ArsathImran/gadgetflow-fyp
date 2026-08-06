@@ -54,7 +54,8 @@
                         </div>
                     </form>
 
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    {{-- Desktop / tablet: table layout --}}
+                    <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-ink">
                                 <tr>
@@ -134,31 +135,6 @@
                                                     <x-icon-trash class="h-3.5 w-3.5" />
                                                     Delete
                                                 </button>
-
-                                                <x-modal name="confirm-gadget-delete-{{ $gadget->id }}" focusable>
-                                                    <form action="{{ route('gadgets.destroy', $gadget) }}" method="POST" class="p-6">
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <h2 class="font-display text-lg font-semibold text-ink">
-                                                            {{ __('Delete this gadget?') }}
-                                                        </h2>
-
-                                                        <p class="mt-1 font-body text-sm text-slate">
-                                                            {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $gadget->name]) }}
-                                                        </p>
-
-                                                        <div class="mt-6 flex justify-end">
-                                                            <x-secondary-button x-on:click="$dispatch('close')">
-                                                                {{ __('Cancel') }}
-                                                            </x-secondary-button>
-
-                                                            <x-danger-button class="ms-3">
-                                                                {{ __('Delete') }}
-                                                            </x-danger-button>
-                                                        </div>
-                                                    </form>
-                                                </x-modal>
                                             </div>
                                         </td>
                                     </tr>
@@ -172,6 +148,125 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Mobile: stacked card layout --}}
+                    <div class="md:hidden space-y-3">
+                        @forelse ($gadgets as $gadget)
+                            @php
+                                $gadgetSubtitle = collect([$gadget->brand, $gadget->model])->filter()->implode(' ');
+                                $showGadgetSubtitle = $gadgetSubtitle !== '' && strcasecmp($gadgetSubtitle, $gadget->name) !== 0;
+                            @endphp
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                <div class="flex items-center gap-3">
+                                    @if ($gadget->image)
+                                        <img
+                                            src="{{ asset('storage/' . $gadget->image) }}"
+                                            alt="{{ $gadget->name }}"
+                                            class="h-14 w-14 shrink-0 rounded-lg object-cover border border-gray-200"
+                                        >
+                                    @else
+                                        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 font-body text-xs text-gray-400">
+                                            No image
+                                        </div>
+                                    @endif
+                                    <div class="min-w-0 flex-1">
+                                        <div class="font-display text-sm font-semibold text-ink">{{ $gadget->name }}</div>
+                                        @if ($showGadgetSubtitle)
+                                            <div class="mt-0.5 font-body text-xs text-slate-500">{{ $gadgetSubtitle }}</div>
+                                        @endif
+                                        <div class="mt-0.5 font-body text-sm text-slate-600">{{ $gadget->category?->name ?? '-' }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Rental Price</p>
+                                        <div class="mt-1 text-sm"><x-spec-chip>{{ number_format($gadget->daily_rental_price, 2) }}</x-spec-chip></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Hourly Price</p>
+                                        <div class="mt-1 text-sm">
+                                            @if ($gadget->hourly_rental_price !== null)
+                                                <x-spec-chip>{{ number_format($gadget->hourly_rental_price, 2) }}</x-spec-chip>
+                                            @else
+                                                <span class="font-body text-slate-400">-</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Deposit</p>
+                                        <div class="mt-1 text-sm"><x-spec-chip>{{ number_format($gadget->deposit_amount, 2) }}</x-spec-chip></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Quantity</p>
+                                        <p class="mt-1 font-mono text-sm text-slate-600">{{ $gadget->quantity }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    @if ($gadget->status === 'active')
+                                        <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">Active</span>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-body text-xs font-semibold text-gray-800">Inactive</span>
+                                    @endif
+                                </div>
+
+                                <div class="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                                    <a href="{{ route('gadgets.show', $gadget) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 px-3 py-2 text-sm text-indigo-700 transition hover:bg-indigo-50">
+                                        <x-icon-eye class="h-3.5 w-3.5" />
+                                        View
+                                    </a>
+                                    <a href="{{ route('gadgets.edit', $gadget) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 transition hover:bg-indigo-50">
+                                        <x-icon-pencil class="h-3.5 w-3.5" />
+                                        Edit
+                                    </a>
+                                    <button
+                                        type="button"
+                                        x-data=""
+                                        x-on:click.prevent="$dispatch('open-modal', 'confirm-gadget-delete-{{ $gadget->id }}')"
+                                        class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 transition hover:bg-red-50"
+                                    >
+                                        <x-icon-trash class="h-3.5 w-3.5" />
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="rounded-2xl border border-dashed border-gray-300 px-4 py-10 text-center font-body text-sm text-gray-500">
+                                No gadgets found.
+                            </p>
+                        @endforelse
+                    </div>
+
+                    {{-- Delete-confirmation modals: rendered once per gadget (shared by both the table and card
+                    triggers above via matching modal names), outside the hidden/md:hidden wrappers so the fixed
+                    modal isn't hidden by a display:none ancestor at either breakpoint. --}}
+                    @foreach ($gadgets as $gadget)
+                        <x-modal name="confirm-gadget-delete-{{ $gadget->id }}" focusable>
+                            <form action="{{ route('gadgets.destroy', $gadget) }}" method="POST" class="p-6">
+                                @csrf
+                                @method('DELETE')
+
+                                <h2 class="font-display text-lg font-semibold text-ink">
+                                    {{ __('Delete this gadget?') }}
+                                </h2>
+
+                                <p class="mt-1 font-body text-sm text-slate">
+                                    {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $gadget->name]) }}
+                                </p>
+
+                                <div class="mt-6 flex justify-end">
+                                    <x-secondary-button x-on:click="$dispatch('close')">
+                                        {{ __('Cancel') }}
+                                    </x-secondary-button>
+
+                                    <x-danger-button class="ms-3">
+                                        {{ __('Delete') }}
+                                    </x-danger-button>
+                                </div>
+                            </form>
+                        </x-modal>
+                    @endforeach
 
                     <div class="mt-6">
                         {{ $gadgets->links() }}

@@ -36,7 +36,8 @@
                         </div>
                     </form>
 
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    {{-- Desktop / tablet: table layout --}}
+                    <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-cloud">
                                 <tr>
@@ -87,6 +88,56 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Mobile: stacked card layout --}}
+                    <div class="md:hidden space-y-3">
+                        @forelse ($customers as $customer)
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                <div class="font-display text-sm font-semibold text-ink">{{ $customer->name }}</div>
+                                <div class="mt-1 font-body text-sm text-slate-500">{{ $customer->email }}</div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Joined</p>
+                                        <p class="mt-1 font-body text-sm text-slate-600">{{ $customer->created_at->format('Y-m-d') }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Rentals</p>
+                                        <p class="mt-1 font-mono text-sm text-slate-600">{{ $customer->rentals_count }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Total Spent</p>
+                                        <div class="mt-1 text-sm"><x-spec-chip>{{ number_format((float) ($customer->rentals_sum_total_amount ?? 0), 2) }}</x-spec-chip></div>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Status</p>
+                                        <div class="mt-1">
+                                            @if ($customer->is_blocked)
+                                                <span class="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 font-body text-xs font-semibold text-red-800">Blocked</span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">Active</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                                    <a href="{{ route('admin.customers.show', $customer) }}" class="rounded-md border border-indigo-200 px-3 py-2 text-sm text-indigo-700 transition hover:bg-indigo-50">View</a>
+                                    <form method="POST" action="{{ route('admin.customers.toggleBlock', $customer) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="rounded-md border {{ $customer->is_blocked ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-red-300 text-red-700 hover:bg-red-50' }} px-3 py-2 text-sm transition">
+                                            {{ $customer->is_blocked ? 'Unblock' : 'Block' }}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="rounded-2xl border border-dashed border-gray-300 px-4 py-10 text-center font-body text-sm text-gray-500">
+                                No customers found.
+                            </p>
+                        @endforelse
                     </div>
 
                     <div class="mt-6">

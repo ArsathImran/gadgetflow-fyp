@@ -18,7 +18,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    {{-- Desktop / tablet: table layout --}}
+                    <div class="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-ink">
                                 <tr>
@@ -88,31 +89,6 @@
                                                     <x-icon-trash class="h-3.5 w-3.5" />
                                                     Delete
                                                 </button>
-
-                                                <x-modal name="confirm-bundle-delete-{{ $bundle->id }}" focusable>
-                                                    <form action="{{ route('admin.bundles.destroy', $bundle) }}" method="POST" class="p-6">
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <h2 class="font-display text-lg font-semibold text-ink">
-                                                            {{ __('Delete this bundle?') }}
-                                                        </h2>
-
-                                                        <p class="mt-1 font-body text-sm text-slate">
-                                                            {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $bundle->name]) }}
-                                                        </p>
-
-                                                        <div class="mt-6 flex justify-end">
-                                                            <x-secondary-button x-on:click="$dispatch('close')">
-                                                                {{ __('Cancel') }}
-                                                            </x-secondary-button>
-
-                                                            <x-danger-button class="ms-3">
-                                                                {{ __('Delete') }}
-                                                            </x-danger-button>
-                                                        </div>
-                                                    </form>
-                                                </x-modal>
                                             </div>
                                         </td>
                                     </tr>
@@ -126,6 +102,113 @@
                             </tbody>
                         </table>
                     </div>
+
+                    {{-- Mobile: stacked card layout --}}
+                    <div class="md:hidden space-y-3">
+                        @forelse ($bundles as $bundle)
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4">
+                                <div class="flex items-center gap-3">
+                                    @if ($bundle->image)
+                                        <img
+                                            src="{{ asset('storage/' . $bundle->image) }}"
+                                            alt="{{ $bundle->name }}"
+                                            class="h-14 w-14 shrink-0 rounded-lg border border-gray-200 object-cover"
+                                        >
+                                    @else
+                                        <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-gray-300 font-body text-xs text-gray-400">
+                                            No image
+                                        </div>
+                                    @endif
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <div class="font-display text-sm font-semibold text-ink">{{ $bundle->name }}</div>
+                                            <span class="inline-flex shrink-0 rounded-full px-2.5 py-0.5 font-body text-xs font-semibold {{ $bundle->type === 'wedding' ? 'bg-pink-100 text-pink-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                                {{ $bundle->type === 'wedding' ? 'Wedding' : 'Short Film' }}
+                                            </span>
+                                        </div>
+                                        @if ($bundle->description)
+                                            <div class="mt-0.5 truncate font-body text-xs text-slate-500" title="{{ $bundle->description }}">
+                                                {{ \Illuminate\Support\Str::limit($bundle->description, 80) }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Daily Rental Price</p>
+                                        <div class="mt-1 text-sm">
+                                            @if ($bundle->daily_rental_price !== null)
+                                                <x-spec-chip>{{ number_format($bundle->daily_rental_price, 2) }}</x-spec-chip>
+                                            @else
+                                                <span class="font-body text-slate-400">-</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="font-body text-xs uppercase tracking-wide text-slate">Status</p>
+                                        <div class="mt-1">
+                                            @if ($bundle->status === 'active')
+                                                <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 font-body text-xs font-semibold text-green-800">Active</span>
+                                            @else
+                                                <span class="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 font-body text-xs font-semibold text-gray-800">Inactive</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                                    <a href="{{ route('admin.bundles.edit', $bundle) }}" class="inline-flex items-center gap-1.5 rounded-md border border-indigo-300 px-3 py-2 text-sm text-indigo-700 transition hover:bg-indigo-50">
+                                        <x-icon-pencil class="h-3.5 w-3.5" />
+                                        Edit
+                                    </a>
+                                    <button
+                                        type="button"
+                                        x-data=""
+                                        x-on:click.prevent="$dispatch('open-modal', 'confirm-bundle-delete-{{ $bundle->id }}')"
+                                        class="inline-flex items-center gap-1.5 rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 transition hover:bg-red-50"
+                                    >
+                                        <x-icon-trash class="h-3.5 w-3.5" />
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="rounded-2xl border border-dashed border-gray-300 px-4 py-10 text-center font-body text-sm text-gray-500">
+                                No bundles found.
+                            </p>
+                        @endforelse
+                    </div>
+
+                    {{-- Delete-confirmation modals: rendered once per bundle (shared by both the table and card
+                    triggers above via matching modal names), outside the hidden/md:hidden wrappers so the fixed
+                    modal isn't hidden by a display:none ancestor at either breakpoint. --}}
+                    @foreach ($bundles as $bundle)
+                        <x-modal name="confirm-bundle-delete-{{ $bundle->id }}" focusable>
+                            <form action="{{ route('admin.bundles.destroy', $bundle) }}" method="POST" class="p-6">
+                                @csrf
+                                @method('DELETE')
+
+                                <h2 class="font-display text-lg font-semibold text-ink">
+                                    {{ __('Delete this bundle?') }}
+                                </h2>
+
+                                <p class="mt-1 font-body text-sm text-slate">
+                                    {{ __('This will permanently delete ":name" and cannot be undone.', ['name' => $bundle->name]) }}
+                                </p>
+
+                                <div class="mt-6 flex justify-end">
+                                    <x-secondary-button x-on:click="$dispatch('close')">
+                                        {{ __('Cancel') }}
+                                    </x-secondary-button>
+
+                                    <x-danger-button class="ms-3">
+                                        {{ __('Delete') }}
+                                    </x-danger-button>
+                                </div>
+                            </form>
+                        </x-modal>
+                    @endforeach
 
                     <div class="mt-6">
                         {{ $bundles->links() }}
