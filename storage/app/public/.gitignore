@@ -1,2 +1,6 @@
 *
 !.gitignore
+!bundles/
+!bundles/**
+!gadgets/
+!gadgets/**
