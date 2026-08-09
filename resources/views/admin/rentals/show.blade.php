@@ -89,6 +89,12 @@
                                 <div class="mt-2"><x-shipping-status-badge :status="$rental->shipping_status" /></div>
                             </div>
                             <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
+                                <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Handed Over At</p>
+                                <p class="mt-2 font-body text-sm font-semibold text-ink">
+                                    {{ $rental->handed_over_at ? $rental->handed_over_at->format('Y-m-d H:i') : '-' }}
+                                </p>
+                            </div>
+                            <div class="rounded-2xl border border-gray-200 bg-cloud p-4">
                                 <p class="font-body text-xs font-semibold uppercase tracking-wider text-slate">Returned At</p>
                                 <p class="mt-2 font-body text-sm font-semibold text-ink">
                                     {{ $rental->returned_at ? $rental->returned_at->format('Y-m-d H:i') : '-' }}

@@ -70,11 +70,15 @@
             <div>
                 <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-white">Reach Us</h3>
                 <ul class="mt-5 space-y-3">
-                    <li class="font-body text-sm leading-6 text-slate-400">GadgetFlow HQ, Johor Bahru, Malaysia</li>
-                    <li class="font-body text-sm text-slate-400">+60 7-234 5678</li>
-                    <li>
-                        <a href="mailto:support@gadgetflow.test" class="font-body text-sm text-slate-400 transition hover:text-white">support@gadgetflow.test</a>
-                    </li>
+                    @foreach (explode("\n", config('company.return_address')) as $line)
+                        <li class="font-body text-sm leading-6 text-slate-400">
+                            @if (str_contains($line, '@'))
+                                <a href="mailto:{{ $line }}" class="transition hover:text-white">{{ $line }}</a>
+                            @else
+                                {{ $line }}
+                            @endif
+                        </li>
+                    @endforeach
                 </ul>
             </div>
         </div>

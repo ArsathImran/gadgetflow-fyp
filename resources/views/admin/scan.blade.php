@@ -102,8 +102,8 @@
                                 <input type="hidden" name="_method" value="PATCH">
 
                                 <div>
-                                    <p class="font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">Inline Return</p>
-                                    <p class="mt-1 font-body text-sm text-indigo-900">Complete the return workflow directly from the scanner result panel.</p>
+                                    <p id="return-panel-title" class="font-body text-xs font-semibold uppercase tracking-wider text-indigo-800">Inline Return</p>
+                                    <p id="return-panel-subtitle" class="mt-1 font-body text-sm text-indigo-900">Complete the return workflow directly from the scanner result panel.</p>
                                 </div>
 
                                 <div class="grid gap-4 sm:grid-cols-2">
@@ -197,6 +197,8 @@
             const confirmHandoverButton = document.getElementById('confirm-handover-button');
             const scanAgainButton = document.getElementById('scan-again-button');
             const returnFormPanel = document.getElementById('return-form-panel');
+            const returnPanelTitle = document.getElementById('return-panel-title');
+            const returnPanelSubtitle = document.getElementById('return-panel-subtitle');
             const returnForm = document.getElementById('return-form');
             const returnLateFeeBox = document.getElementById('return-late-fee-box');
             const returnLateFeeText = document.getElementById('return-late-fee-text');
@@ -338,11 +340,22 @@
                 confirmHandoverButton.classList.add('hidden');
                 returnFormPanel.classList.add('hidden');
 
+                const isDelivery = data.pickup_type === 'delivery';
+
                 if (data.next_action === 'handover') {
-                    actionText.textContent = 'This rental is approved and ready for physical handover.';
+                    actionText.textContent = isDelivery
+                        ? 'This delivery order is approved. Scan again once the courier confirms delivery to mark it as delivered.'
+                        : 'This rental is approved and ready for physical handover.';
+                    confirmHandoverButton.textContent = isDelivery ? 'Confirm Delivery' : 'Confirm Handover';
                     confirmHandoverButton.classList.remove('hidden');
                 } else if (data.next_action === 'return') {
-                    actionText.textContent = 'This rental has already been handed over. Complete the return workflow below.';
+                    actionText.textContent = isDelivery
+                        ? 'This order has been delivered. Once the returned package has arrived and been inspected, confirm the return below.'
+                        : 'This rental has already been handed over. Complete the return workflow below.';
+                    returnPanelTitle.textContent = isDelivery ? 'Return Received' : 'Inline Return';
+                    returnPanelSubtitle.textContent = isDelivery
+                        ? 'Confirm the returned package has arrived and been inspected, then complete the return workflow below.'
+                        : 'Complete the return workflow directly from the scanner result panel.';
                     configureReturnForm(data);
                     returnFormPanel.classList.remove('hidden');
                 } else if (data.next_action === 'already_completed') {
@@ -455,7 +468,9 @@
                     updateScannerState('Action Failed', error.message, 'red');
                 } finally {
                     confirmHandoverButton.disabled = false;
-                    confirmHandoverButton.textContent = 'Confirm Handover';
+                    confirmHandoverButton.textContent = activeRental && activeRental.pickup_type === 'delivery'
+                        ? 'Confirm Delivery'
+                        : 'Confirm Handover';
                 }
             }
 

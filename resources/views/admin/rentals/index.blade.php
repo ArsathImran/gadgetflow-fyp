@@ -106,6 +106,10 @@
                                                     <div class="mt-1 font-body text-xs text-slate-500">
                                                         Condition: {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '-')) }}
                                                     </div>
+                                                @elseif ($rental->handed_over_at)
+                                                    <div class="mt-2 font-body text-xs text-slate-500">
+                                                        Handed Over: {{ $rental->handed_over_at->format('Y-m-d H:i') }}
+                                                    </div>
                                                 @endif
                                             </td>
                                             <td class="px-6 py-4 text-right font-body text-sm font-medium">
@@ -255,6 +259,10 @@
                                         </div>
                                         <div class="mt-1 font-body text-xs text-slate-500">
                                             Condition: {{ ucwords(str_replace('_', ' ', $rental->condition_on_return ?? '-')) }}
+                                        </div>
+                                    @elseif ($rental->handed_over_at)
+                                        <div class="mt-2 font-body text-xs text-slate-500">
+                                            Handed Over: {{ $rental->handed_over_at->format('Y-m-d H:i') }}
                                         </div>
                                     @endif
 

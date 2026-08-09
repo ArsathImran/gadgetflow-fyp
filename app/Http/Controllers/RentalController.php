@@ -380,12 +380,21 @@ class RentalController extends Controller
             ], 422);
         }
 
+        $isDelivery = $rental->pickup_type === 'delivery';
+        $collectsPaymentNow = ! $isDelivery && $rental->payment_status === 'pending_collection';
+
         $rental->update([
             'handed_over_at' => now(),
+            ...($isDelivery ? ['shipping_status' => 'delivered'] : []),
+            ...($collectsPaymentNow ? [
+                'payment_status' => 'collected',
+                'payment_collected_at' => now(),
+                'payment_collected_by' => auth()->id(),
+            ] : []),
         ]);
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new HandoverConfirmed($rental));
+        $rental->user->notify($isDelivery ? new GadgetDelivered($rental) : new HandoverConfirmed($rental));
 
         return response()->json([
             'message' => 'Handover confirmed successfully.',

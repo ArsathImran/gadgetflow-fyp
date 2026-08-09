@@ -186,6 +186,17 @@
                                     @enderror
                                 </div>
 
+                                <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wider text-indigo-700">Return Instructions</p>
+                                    <p class="mt-2 text-sm text-indigo-900">
+                                        Since this item was received by delivery, please return it yourself via courier or postage, at your own cost, once your rental period ends.
+                                    </p>
+                                    <div class="mt-3 rounded-lg bg-white/80 p-3">
+                                        <p class="text-xs uppercase tracking-wide text-indigo-700">Return Address</p>
+                                        <p class="mt-1 whitespace-pre-line text-sm font-semibold text-indigo-950">{{ config('company.return_address') }}</p>
+                                    </div>
+                                </div>
+
                                 <div class="grid gap-4 sm:grid-cols-2">
                                     <div>
                                         <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
@@ -309,6 +320,18 @@
             const rentalTypeValue = () => document.querySelector('input[name="rental_type"]:checked')?.value || 'day';
             const pickupTypeValue = () => document.querySelector('input[name="pickup_type"]:checked')?.value || 'walk_in';
 
+            const updateOptionLabels = (radios) => {
+                radios.forEach((radio) => {
+                    const label = radio.closest('label');
+                    label.classList.toggle('border-indigo-600', radio.checked);
+                    label.classList.toggle('bg-indigo-50', radio.checked);
+                    label.classList.toggle('text-indigo-700', radio.checked);
+                    label.classList.toggle('border-gray-300', ! radio.checked);
+                    label.classList.toggle('bg-white', ! radio.checked);
+                    label.classList.toggle('text-gray-700', ! radio.checked);
+                });
+            };
+
             const toggleFields = () => {
                 const isHour = rentalTypeValue() === 'hour';
                 const isDelivery = pickupTypeValue() === 'delivery';
@@ -326,6 +349,8 @@
                 if (idDocument) {
                     idDocument.required = isDelivery;
                 }
+
+                updateOptionLabels(pickupTypeRadios);
             };
 
             const toggleSubmit = () => {

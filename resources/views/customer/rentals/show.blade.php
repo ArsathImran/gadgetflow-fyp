@@ -159,6 +159,24 @@
                     </section>
                 @endif
 
+                @if ($rental->pickup_type === 'delivery' && $rental->shipping_status === 'delivered' && ! $rental->returned_at)
+                    <section class="rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm">
+                        <p class="font-body text-xs font-semibold uppercase tracking-wider text-indigo-700">Return Instructions</p>
+                        <p class="mt-2 font-body text-sm text-indigo-900">
+                            Since this item was received by delivery, please return it yourself via courier or postage, at your own cost, once your rental period ends.
+                        </p>
+
+                        <div class="mt-4 rounded-xl bg-white/80 p-4">
+                            <p class="font-body text-xs uppercase tracking-wide text-indigo-700">Return Address</p>
+                            <p class="mt-1 whitespace-pre-line font-body text-sm font-semibold text-indigo-950">{{ config('company.return_address') }}</p>
+                        </div>
+
+                        <p class="mt-4 font-body text-sm text-indigo-900">
+                            Once we receive and inspect the returned item, we'll confirm its condition and process your deposit decision (full refund, partial refund, or deduction) — the same process used for walk-in returns.
+                        </p>
+                    </section>
+                @endif
+
                 @if ($rental->pickup_type === 'walk_in' && $rental->payment_status === 'collected' && $rental->payment_collected_at)
                     <section class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
                         <p class="font-body text-xs font-semibold uppercase tracking-wider text-emerald-700">Payment Receipt</p>
