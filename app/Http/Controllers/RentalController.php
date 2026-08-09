@@ -173,7 +173,7 @@ class RentalController extends Controller
         });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new RentalSubmitted($rental));
+        $this->notifySafely($rental->user, new RentalSubmitted($rental));
 
         return redirect()
             ->route('customer.rentals.index')
@@ -394,7 +394,7 @@ class RentalController extends Controller
         ]);
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify($isDelivery ? new GadgetDelivered($rental) : new HandoverConfirmed($rental));
+        $this->notifySafely($rental->user, $isDelivery ? new GadgetDelivered($rental) : new HandoverConfirmed($rental));
 
         return response()->json([
             'message' => 'Handover confirmed successfully.',
@@ -434,7 +434,7 @@ class RentalController extends Controller
         });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new RentalApproved($rental));
+        $this->notifySafely($rental->user, new RentalApproved($rental));
 
         return back()->with('success', 'Rental request approved.');
     }
@@ -465,7 +465,7 @@ class RentalController extends Controller
         });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new RentalRejected($rental));
+        $this->notifySafely($rental->user, new RentalRejected($rental));
 
         return back()->with('success', 'Rental request rejected.');
     }
@@ -592,7 +592,7 @@ class RentalController extends Controller
         });
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new RentalCompleted($rental));
+        $this->notifySafely($rental->user, new RentalCompleted($rental));
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -662,7 +662,7 @@ class RentalController extends Controller
         ]);
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new PaymentVerified($rental));
+        $this->notifySafely($rental->user, new PaymentVerified($rental));
 
         return back()->with('success', $paymentStatus === 'verified'
             ? 'Payment verified successfully.'
@@ -687,7 +687,7 @@ class RentalController extends Controller
         ]);
 
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
-        $rental->user->notify(new PaymentRejected($rental));
+        $this->notifySafely($rental->user, new PaymentRejected($rental));
 
         return back()->with('success', 'Payment rejected successfully.');
     }
@@ -716,13 +716,22 @@ class RentalController extends Controller
         $rental->refresh()->loadMissing(['user', 'gadget', 'bundle']);
 
         match ($validated['shipping_status']) {
-            'shipped' => $rental->user->notify(new GadgetShipped($rental)),
-            'out_for_delivery' => $rental->user->notify(new OutForDelivery($rental)),
-            'delivered' => $rental->user->notify(new GadgetDelivered($rental)),
+            'shipped' => $this->notifySafely($rental->user, new GadgetShipped($rental)),
+            'out_for_delivery' => $this->notifySafely($rental->user, new OutForDelivery($rental)),
+            'delivered' => $this->notifySafely($rental->user, new GadgetDelivered($rental)),
             default => null,
         };
 
         return back()->with('success', 'Shipping status updated successfully.');
+    }
+
+    private function notifySafely($notifiable, $notification): void
+    {
+        try {
+            $notifiable->notify($notification);
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function calculateTotalAmount(Gadget $gadget, array $validated): float

@@ -44,7 +44,11 @@ class SendRentalEndingSoonReminders extends Command
             });
 
         foreach ($rentals as $rental) {
-            $rental->user?->notify(new RentalEndingSoon($rental));
+            try {
+                $rental->user?->notify(new RentalEndingSoon($rental));
+            } catch (\Throwable $e) {
+                report($e);
+            }
             $rental->update(['ending_soon_notified_at' => now()]);
         }
 
