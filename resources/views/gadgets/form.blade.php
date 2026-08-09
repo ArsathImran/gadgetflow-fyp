@@ -255,7 +255,7 @@
                                 Upload up to 6 additional photos for the gadget detail page. These are separate from the cover image above.
                             </p>
                             <x-input-error class="mt-2" :messages="$errors->get('gallery_images')" />
-                            <x-input-error class="mt-2" :messages="$errors->get('gallery_images.*')" />
+                            <x-input-error class="mt-2" :messages="collect($errors->get('gallery_images.*'))->flatten()->all()" />
 
                             @if ($isEditing && !empty($gadget->gallery_images))
                                 <div class="mt-4">
@@ -282,7 +282,7 @@
                                         @endforeach
                                     </div>
                                     <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images')" />
-                                    <x-input-error class="mt-2" :messages="$errors->get('remove_gallery_images.*')" />
+                                    <x-input-error class="mt-2" :messages="collect($errors->get('remove_gallery_images.*'))->flatten()->all()" />
                                 </div>
                             @endif
                         </div>
